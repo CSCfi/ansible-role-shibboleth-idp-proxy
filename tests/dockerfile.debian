@@ -1,0 +1,6 @@
+# dockerfile.debian
+FROM debian:stretch
+# Install Ansible
+RUN apt-get update && apt-get install -y software-properties-common git ansible
+# Install Ansible inventory file
+RUN echo "[local]\nlocalhost ansible_connection=local" > /etc/ansible/hosts

@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+    This file is an EXAMPLE configuration file. While the configuration
+    presented in this example file is semi-functional, it isn't very
+    interesting. It is here only as a starting point for your deployment
+    process.
+    
+    Very few attribute definitions and data connectors are demonstrated,
+    and the data is derived statically from the logged-in username and a
+    static example connector.
+
+    Attribute-resolver-full.xml contains more examples of attributes,
+    encoders, and data connectors. Deployers should refer to the Shibboleth
+    documentation for a complete list of components and their options.
+-->
+<resolver:AttributeResolver
+        xmlns:resolver="urn:mace:shibboleth:2.0:resolver" 
+        xmlns:pc="urn:mace:shibboleth:2.0:resolver:pc"
+        xmlns:ad="urn:mace:shibboleth:2.0:resolver:ad" 
+        xmlns:dc="urn:mace:shibboleth:2.0:resolver:dc"
+        xmlns:enc="urn:mace:shibboleth:2.0:attribute:encoder" 
+        xmlns:sec="urn:mace:shibboleth:2.0:security"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+        xmlns:oidcext="org.geant.idpextension.oidc.attribute.encoder"
+        xsi:schemaLocation="urn:mace:shibboleth:2.0:resolver http://shibboleth.net/schema/idp/shibboleth-attribute-resolver.xsd
+                            urn:mace:shibboleth:2.0:resolver:pc http://shibboleth.net/schema/idp/shibboleth-attribute-resolver-pc.xsd
+                            urn:mace:shibboleth:2.0:resolver:ad http://shibboleth.net/schema/idp/shibboleth-attribute-resolver-ad.xsd
+                            urn:mace:shibboleth:2.0:resolver:dc http://shibboleth.net/schema/idp/shibboleth-attribute-resolver-dc.xsd
+                            urn:mace:shibboleth:2.0:attribute:encoder http://shibboleth.net/schema/idp/shibboleth-attribute-encoder.xsd
+                            urn:mace:shibboleth:2.0:security http://shibboleth.net/schema/idp/shibboleth-security.xsd
+                            org.geant.idpextension.oidc.attribute.encoder
+                            classpath:/schema/idp-oidc-extension-attribute-encoder.xsd">
+
+    <!-- ========================================== -->
+    <!--      Attribute Definitions                 -->
+    <!-- ========================================== -->
+
+    <!--
+    The EPPN is the "standard" federated username in higher ed.
+    For guidelines on the implementation of this attribute, refer
+    to the Shibboleth and eduPerson documentation. Above all, do
+    not expose a value for this attribute without considering the
+    long term implications.
+    -->
+    <resolver:AttributeDefinition id="eduPersonPrincipalName" xsi:type="ad:Script">
+        <resolver:AttributeEncoder xsi:type="enc:SAML2String" name="urn:oid:1.3.6.1.4.1.5923.1.1.1.6" friendlyName="eppn" encodeType="false" />
+        <resolver:AttributeEncoder xsi:type="oidcext:OIDCString" name="eppn" setToToken="true" />
+        <ad:Script><![CDATA[
+        authnContext = resolutionContext.getParent().getSubcontext("net.shibboleth.idp.authn.context.AuthenticationContext");
+        if (authnContext !== null) {
+          subject = authnContext.getAuthenticationResult().getSubject();
+          principals = subject.getPrincipals(Java.type("fi.mpass.shibboleth.authn.principal.impl.ShibHeaderPrincipal").class);
+           iterator = principals.iterator();
+           while (iterator.hasNext()) {
+              principal = iterator.next();
+              if ("eppn".equals(principal.getKey())) {
+                 eduPersonPrincipalName.addValue(principal.getValue());
+              }
+          }
+        }
+        ]]></ad:Script>
+    </resolver:AttributeDefinition>
+    
+    
+    <!--
+    The uid is the closest thing to a "standard" LDAP attribute
+    representing a local username, but you should generally *never*
+    expose uid to federated services, as it is rarely globally unique.
+    -->
+
+
+    <resolver:AttributeDefinition id="uid" xsi:type="ad:PrincipalName">
+        <resolver:AttributeEncoder xsi:type="enc:SAML2String" name="urn:oid:0.9.2342.19200300.100.1.1" friendlyName="uid" encodeType="false" />
+        <resolver:AttributeEncoder xsi:type="oidcext:OIDCString" name="uid" setToToken="true" />
+    </resolver:AttributeDefinition>
+    
+    <!--
+    In the rest of the world, the email address is the standard identifier,
+    despite the problems with that practice. Consider making the EPPN
+    value the same as your official email addresses whenever possible.
+    -->
+
+   <resolver:AttributeDefinition id="mail" xsi:type="ad:Script">
+        <resolver:AttributeEncoder xsi:type="enc:SAML2String" name="urn:oid:0.9.2342.19200300.100.1.3" friendlyName="mail" encodeType="false" />
+        <resolver:AttributeEncoder xsi:type="oidcext:OIDCString" name="email" setToToken="true" />
+        <ad:Script><![CDATA[
+        authnContext = resolutionContext.getParent().getSubcontext("net.shibboleth.idp.authn.context.AuthenticationContext");
+        if (authnContext !== null) {
+          subject = authnContext.getAuthenticationResult().getSubject();
+          principals = subject.getPrincipals(Java.type("fi.mpass.shibboleth.authn.principal.impl.ShibHeaderPrincipal").class);
+          iterator = principals.iterator();
+          while (iterator.hasNext()) {
+             principal = iterator.next();
+             if ("mail".equals(principal.getKey())) {
+                mail.addValue(principal.getValue());
+             }
+          }
+        }
+        ]]></ad:Script>
+
+    </resolver:AttributeDefinition>
+    
+
+   <resolver:AttributeDefinition id="cn" xsi:type="ad:Script">
+        <resolver:AttributeEncoder xsi:type="enc:SAML2String" name="urn:oid:2.5.4.3" friendlyName="cn" encodeType="false" />
+        <resolver:AttributeEncoder xsi:type="oidcext:OIDCString" name="name" setToToken="true" />
+        <ad:Script><![CDATA[
+        authnContext = resolutionContext.getParent().getSubcontext("net.shibboleth.idp.authn.context.AuthenticationContext");
+        if (authnContext !== null) {
+          subject = authnContext.getAuthenticationResult().getSubject();
+          principals = subject.getPrincipals(Java.type("fi.mpass.shibboleth.authn.principal.impl.ShibHeaderPrincipal").class);
+          iterator = principals.iterator();
+          while (iterator.hasNext()) {
+             principal = iterator.next();
+             if ("cn".equals(principal.getKey())) {
+                cn.addValue(principal.getValue());
+             }
+          }
+        }
+        ]]></ad:Script>
+    </resolver:AttributeDefinition>
+    
+    
+    <resolver:AttributeDefinition id="sn" xsi:type="ad:Script">
+        <resolver:AttributeEncoder xsi:type="enc:SAML2String" name="urn:oid:2.5.4.4" friendlyName="sn" encodeType="false" />
+        <resolver:AttributeEncoder xsi:type="oidcext:OIDCString" name="family_name" setToToken="true" />
+        <ad:Script><![CDATA[
+        authnContext = resolutionContext.getParent().getSubcontext("net.shibboleth.idp.authn.context.AuthenticationContext");
+
+        if (authnContext !== null) {
+          subject = authnContext.getAuthenticationResult().getSubject();
+          principals = subject.getPrincipals(Java.type("fi.mpass.shibboleth.authn.principal.impl.ShibHeaderPrincipal").class);
+          iterator = principals.iterator();
+          while (iterator.hasNext()) {
+             principal = iterator.next();
+             if ("sn".equals(principal.getKey())) {
+                sn.addValue(principal.getValue());
+             }
+          }
+
+        }
+        ]]></ad:Script>
+    </resolver:AttributeDefinition>
+
+
+    <resolver:AttributeDefinition id="givenName" xsi:type="ad:Script">
+        <resolver:AttributeEncoder xsi:type="enc:SAML2String" name="urn:oid:2.5.4.42" friendlyName="givenName" encodeType="false" />
+        <resolver:AttributeEncoder xsi:type="oidcext:OIDCString" name="given_name" setToToken="true" />
+        <ad:Script><![CDATA[
+        authnContext = resolutionContext.getParent().getSubcontext("net.shibboleth.idp.authn.context.AuthenticationContext");
+        if (authnContext !== null) {
+          subject = authnContext.getAuthenticationResult().getSubject();
+          principals = subject.getPrincipals(Java.type("fi.mpass.shibboleth.authn.principal.impl.ShibHeaderPrincipal").class);
+          iterator = principals.iterator();
+          while (iterator.hasNext()) {
+             principal = iterator.next();
+             if ("givenName".equals(principal.getKey())) {
+                givenName.addValue(principal.getValue());
+             }
+          }
+        }
+        ]]></ad:Script>
+    </resolver:AttributeDefinition>
+   
+       
+    <resolver:AttributeDefinition id="displayName" xsi:type="ad:Script">
+        <resolver:AttributeEncoder xsi:type="enc:SAML2String" name="urn:oid:2.16.840.1.113730.3.1.241" friendlyName="givenName" encodeType="false" />
+        <resolver:AttributeEncoder xsi:type="oidcext:OIDCString" name="displayName" setToToken="true" />
+        <ad:Script><![CDATA[
+        authnContext = resolutionContext.getParent().getSubcontext("net.shibboleth.idp.authn.context.AuthenticationContext");
+        if (authnContext !== null) {
+          subject = authnContext.getAuthenticationResult().getSubject();
+          principals = subject.getPrincipals(Java.type("fi.mpass.shibboleth.authn.principal.impl.ShibHeaderPrincipal").class);
+          iterator = principals.iterator();
+          while (iterator.hasNext()) {
+             principal = iterator.next();
+             if ("displayName".equals(principal.getKey())) {
+                displayName.addValue(principal.getValue());
+             }
+          }
+        }
+        ]]></ad:Script>
+
+    </resolver:AttributeDefinition>  
+    
+    
+    <resolver:AttributeDefinition id="schacHomeOrganization" xsi:type="ad:Script">
+        <resolver:AttributeEncoder xsi:type="enc:SAML2String" name="urn:oid:1.3.6.1.4.1.25178.1.2.9" friendlyName="schacHomeOrganization" encodeType="false" />
+        <resolver:AttributeEncoder xsi:type="oidcext:OIDCString" name="schacHomeOrganization" setToToken="true" />
+        <ad:Script><![CDATA[
+        authnContext = resolutionContext.getParent().getSubcontext("net.shibboleth.idp.authn.context.AuthenticationContext");
+        if (authnContext !== null) {
+          subject = authnContext.getAuthenticationResult().getSubject();
+          principals = subject.getPrincipals(Java.type("fi.mpass.shibboleth.authn.principal.impl.ShibHeaderPrincipal").class);
+          iterator = principals.iterator();
+          while (iterator.hasNext()) {
+             principal = iterator.next();
+             if ("schacHomeOrganization".equals(principal.getKey())) {
+                schacHomeOrganization.addValue(principal.getValue());
+             }
+          }
+        }
+        ]]></ad:Script>
+    </resolver:AttributeDefinition>
+
+
+    <resolver:AttributeDefinition id="schacHomeOrganizationType" xsi:type="ad:Script">
+        <resolver:AttributeEncoder xsi:type="enc:SAML2String" name="urn:oid:1.3.6.1.4.1.25178.1.2.10" friendlyName="schacHomeOrganizationType" encodeType="false" />
+        <resolver:AttributeEncoder xsi:type="oidcext:OIDCString" name="schacHomeOrganizationType" setToToken="true" />
+        <ad:Script><![CDATA[
+        authnContext = resolutionContext.getParent().getSubcontext("net.shibboleth.idp.authn.context.AuthenticationContext");
+        if (authnContext !== null) {
+          subject = authnContext.getAuthenticationResult().getSubject();
+          principals = subject.getPrincipals(Java.type("fi.mpass.shibboleth.authn.principal.impl.ShibHeaderPrincipal").class);
+          iterator = principals.iterator();
+          while (iterator.hasNext()) {
+             principal = iterator.next();
+             if ("schacHomeOrganizationType".equals(principal.getKey())) {
+                schacHomeOrganizationType.addValue(principal.getValue());
+             }
+          }
+        }
+        ]]></ad:Script>
+    </resolver:AttributeDefinition>   
+
+
+    <resolver:AttributeDefinition id="CSCUserName" xsi:type="ad:Simple" sourceAttributeID="CSCUserName">
+        <resolver:Dependency ref="myLDAP" />
+        <resolver:AttributeEncoder xsi:type="enc:SAML2String" name="urn:oid:1.3.6.1.4.1.16161.4.0.53" friendlyName="CSCUserName" encodeType="false"/>
+        <resolver:AttributeEncoder xsi:type="oidcext:OIDCString" name="CSCUserName" placeToIDToken="true" setToToken="true"  />
+    </resolver:AttributeDefinition>
+
+    
+    <!--
+    <resolver:AttributeDefinition id="groupNames" xsi:type="ad:Simple" sourceAttributeID="groupNames">
+        <resolver:Dependency ref="myLDAP" />
+        <resolver:AttributeEncoder xsi:type="enc:SAML2String" name="urn:oid:1.3.6.1.4.1.8057.2.80.26" friendlyName="groupNames" encodeType="false"/>
+        <resolver:AttributeEncoder xsi:type="oidcext:OIDCString" name="group_names" placeToIDToken="true" setToToken="true" asArray="true" />
+    </resolver:AttributeDefinition>
+
+    <resolver:AttributeDefinition id="eduPersonPrincipalNames" xsi:type="ad:Simple" sourceAttributeID="eduPersonPrincipalNames">
+        <resolver:Dependency ref="myLDAP" />
+        <resolver:AttributeEncoder xsi:type="enc:SAML2String" name="urn:oid:1.3.6.1.4.1.8057.2.80.10" friendlyName="eduPersonPrincipalNames" encodeType="false"/>
+        <resolver:AttributeEncoder xsi:type="oidcext:OIDCString" name="linkedIds" placeToIDToken="true" setToToken="true" asArray="true" />
+    </resolver:AttributeDefinition>
+
+    <resolver:AttributeDefinition id="fairdataId" xsi:type="ad:Simple" sourceAttributeID="login;x-ns-fdid-persistent-shadow">
+        <resolver:Dependency ref="myLDAP" />
+        <resolver:AttributeEncoder xsi:type="enc:SAML2String" name="urn:oid:1.3.6.1.4.1.8057.2.80.9" friendlyName="login;x-ns-fdid-persistent-shadow" encodeType="false"/>
+    </resolver:AttributeDefinition>
+    -->
+
+    <!--
+    This is an example of an attribute sourced from a data connector.
+    -->
+    <resolver:AttributeDefinition id="eduPersonScopedAffiliation" xsi:type="ad:Scoped" scope="%{idp.scope}" sourceAttributeID="affiliation">
+        <resolver:Dependency ref="staticAttributes" />
+        <resolver:AttributeEncoder xsi:type="enc:SAML2ScopedString" name="urn:oid:1.3.6.1.4.1.5923.1.1.1.9" friendlyName="eduPersonScopedAffiliation" encodeType="false" />
+        <resolver:AttributeEncoder xsi:type="oidcext:OIDCString" name="eduPersonScopedAffiliation" />
+    </resolver:AttributeDefinition>
+
+    <!-- ========================================== -->
+    <!--      Data Connectors                       -->
+    <!-- ========================================== -->
+
+    <resolver:DataConnector id="staticAttributes" xsi:type="dc:Static">
+        <dc:Attribute id="affiliation">
+            <dc:Value>member</dc:Value>
+        </dc:Attribute>
+    </resolver:DataConnector>
+    
+    <resolver:DataConnector id="myLDAP" xsi:type="dc:LDAPDirectory"
+        ldapURL="%{idp.attribute.resolver.LDAP.ldapURL}"
+        baseDN="%{idp.attribute.resolver.LDAP.baseDN}"
+        principal="%{idp.attribute.resolver.LDAP.bindDN}"
+        principalCredential="%{idp.attribute.resolver.LDAP.bindDNCredential}">
+        <dc:FilterTemplate>
+            <![CDATA[
+                (eduPersonPrincipalName=$resolutionContext.principal)
+            ]]>
+        </dc:FilterTemplate>
+    </resolver:DataConnector>
+	
+</resolver:AttributeResolver>

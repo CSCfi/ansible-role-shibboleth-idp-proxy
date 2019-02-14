@@ -1,0 +1,5 @@
+---
+- src: CSCfi.apache
+- src: CSCfi.shibboleth-sp
+- src: CSCfi.jetty
+- src: CSCfi.shibboleth-idp

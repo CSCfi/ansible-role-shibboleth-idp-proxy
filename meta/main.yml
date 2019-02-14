@@ -1,0 +1,20 @@
+galaxy_info:
+  author: Sami Silén
+  description: Shibboleth Proxy for RedHat and Debian
+  company: CSC - IT Center for Science
+  license: license (MIT)
+  
+  min_ansible_version: 2.5
+  
+  platforms:
+    - name: Debian
+      versions:
+        - all
+    - name: EL
+      versions:
+        - all
+          
+dependencies:
+  - { src: CSCfi.apache, configurables: '{{ apache_configurables | default(None) }}' }
+  - { src: CSCfi.shibboleth-sp, configurables: "{{ shibbolethsp_configurables | default(None) }}" } 
+  - { src: CSCfi.shibboleth-idp, configurables: "{{ shibbolethidp_configurables | default(None) }}" }

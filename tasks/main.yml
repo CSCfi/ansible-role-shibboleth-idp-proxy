@@ -1,0 +1,35 @@
+---
+# tasks file for CSCfi.shibboleth-proxy
+
+- name: "Main | webroot | directory | create"
+  file: path={{ shibbolethidp_jetty_base }}/webapps/root state=directory mode=0775 owner=jetty group=jetty
+  
+- name: "Main | webroot | index.html"
+  copy:
+    content: ""
+    dest: "{{ shibbolethidp_jetty_base }}/webapps/root/index.html"
+    force: no
+    group: jetty
+    owner: jetty
+    mode: 0775
+  
+- name: "Main | Template | Directories | Create"
+  file:
+    state: directory
+    dest: "/{{ item.path }}"
+  with_filetree: "{{ role_path }}/templates"
+  when: item.state == 'directory'
+
+- name: "Main | Template | Files | Create"
+  template:
+    src: "{{ item.src }}"
+    dest: "/{{ item.path }}"
+    backup: yes
+    force: yes
+  with_filetree: "{{ role_path }}/templates"
+  when: item.state == 'file'
+
+- name: Main | Configurables
+  include: shibbolethproxy_{{ item }}.yml
+  with_items: "{{ configurables }}"
+  when: configurables is defined
