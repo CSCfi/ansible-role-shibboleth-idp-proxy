@@ -7,12 +7,7 @@ An role which installs Shibboleth Proxy on RedHat/Debian servers.
 
 Requirements
 ------------
-
-* CSCfi.jetty ( Optional, /opt/jetty must anyways contain unpacked jetty distribution )
-* CSCfi.mariadb (Optional, configurable nameid uses database storage )
-* CSCfi.apache
-* CSCfi.shibboleth-idp
-* CSCfi.shibboleth-sp
+* ansible 2.5 <
 
 Role Variables
 --------------
@@ -29,26 +24,26 @@ See example playbook for calling role with configurable array and overwritable a
 Dependencies
 ------------
 
-* CSCfi.jetty
-* CSCfi.shibboleth-idp
-* CSCfi.shibboleth-sp
-* CSCfi.apache
+* [CSCfi.jetty](https://github.com/CSCfi/ansible-role-jetty) 
+* [CSCfi.mariadb](https://github.com/CSCfi/ansible-role-mariadb) (Optional, configurable nameid uses database storage )
+* [CSCfi.apache](https://github.com/CSCfi/ansible-role-apache)
+* [CSCfi.shibboleth-idp](https://github.com/CSCfi/ansible-role-shibboleth-idp)
+* [CSCfi.shibboleth-sp](https://github.com/CSCfi/ansible-role-shibboleth-sp)
 
 Example Playbook
 ----------------
 
     - hosts: all
-			vars:
-				shibbolethidp_configurables: ['ldap','shibsp','oidc','disco','certs']
-			  shibbolethidp_jetty_secure_port: 8443
-				shibbolethidp_mpassidrelease: 0.9.4
-		
-		    shibbolethsp_configurables: ['certs']
-
-			  ansible_fqdn: my.proxy.localhost
-
-		    apache_configurables: ['certs']
-
+      vars:
+      	shibbolethidp_configurables: ['ldap','shibsp','oidc','disco','certs']
+	shibbolethidp_jetty_secure_port: 8443
+	shibbolethidp_mpassidrelease: 0.9.4
+	
+	shibbolethsp_configurables: ['certs']
+	
+	ansible_fqdn: my.proxy.localhost
+	
+	apache_configurables: ['certs']
+	
       roles:
-				- { role: IAM.base }
-			  - { role: CSCfi.shibboleth-proxy }
+      	- { role: CSCfi.shibboleth-proxy, configurables: ['flows','disco'] }
