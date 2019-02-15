@@ -1,7 +1,7 @@
 # - name: Apache related configuration
 # ==================================
 - name: Proxy | Apache | configure | conf.d/idpproxy.conf
-  template: src={{ idp }}/etc/httpd/conf.d/idpproxy.conf dest=/etc/httpd/conf.d/idpproxy.conf backup=no
+  template: src=etc/httpd/conf.d/idpproxy.conf dest=/etc/httpd/conf.d/idpproxy.conf backup=no
 
 - name: Proxy | Apache | configure | index.html
   copy:
