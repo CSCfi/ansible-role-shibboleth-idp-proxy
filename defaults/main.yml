@@ -10,6 +10,3 @@ shibbolethproxy_flows:
   - id: "Haka-test"
     ds: "https://testsp.funet.fi/shibboleth/WAYF"
     location: "LoginHakaTest"
-    redirecturis:
-      - https://testidp.funet.fi/idp/Authn/SocialUserOpenIdConnectEnd
-
