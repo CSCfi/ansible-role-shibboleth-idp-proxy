@@ -1,9 +1,9 @@
 [![Build Status](https://travis-ci.org/CSCfi/ansible-role-shibboleth-proxy.svg?branch=master)](https://travis-ci.org/CSCfi/ansible-role-shibboleth-proxy)
 
-Ansible-Role: Shibboleth Proxy
+Ansible-Role: Shibboleth IdP Proxy
 =========
 
-An role which installs Shibboleth Proxy on RedHat/Debian servers. 
+A role which installs Shibboleth IdP Proxy on RedHat/Debian servers. 
 
 Requirements
 ------------
