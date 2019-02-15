@@ -1,76 +1,102 @@
-- name: Flows | ShibSP | Download | Plugin v{{ shibbolethidp_shibspplugin_version }}
+- name: ShibSP | Download | Plugin v{{ shibbolethidp_shibspplugin_version }}
   unarchive:
     extra_opts: ['--strip-components=1']
     src: "{{ shibbolethproxy_shibspplugin_location }}/releases/download/{{ shibbolethproxy_shibspplugin_version }}/shibboleth-idp-authn-shibsp-{{ shibbolethproxy_shibspplugin_version | regex_replace('[^0-9.]', '') }}.tar.gz"
     remote_src: yes
     dest: "{{ shibbolethidp_idp_home }}"
+    creates: "{{ shibbolethidp_idp_home }}/edit-webapp/WEB-INF/lib/idp-authn-api-shibsp-{{ shibbolethproxy_shibspplugin_version | regex_replace('[^0-9.]', '') }}.jar"
   notify: rebuild shibboleth-idp
 
-- name: Flows | Configure | SessionInitiator | /etc/shibboleth/shibboleth2.xml
+- name: ShibSP | Detect | Duplicate | Plugins
+  find:
+    paths: "{{ shibbolethidp_idp_home }}/edit-webapp/WEB-INF/lib"
+    patterns: "^(?!.*({{ shibbolethproxy_shibspplugin_version | regex_replace('[^0-9.]', '') }})).*shibsp"
+    use_regex: true
+  register: files_to_delete
+
+- name: ShibSP | Delete | Older | Plugins
+  file:
+    path: "{{ shibbolethproxy_item.path }}"
+    state: absent
+  with_items: "{{ files_to_delete.files }}"    
+  loop_control:    
+    loop_var: shibbolethproxy_item
+
+- name: ShibSP | Flows | Configure | SessionInitiator | /etc/shibboleth/shibboleth2.xml
   blockinfile:
     dest: "/etc/shibboleth/shibboleth2.xml"
-    marker: "            <!-- {mark} ansible managed - {{ item['location'] }} SessionInitiator  -->"
+    marker: "            <!-- {mark} ansible managed - {{ shibbolethproxy_item['location'] }} SessionInitiator  -->"
     insertbefore: "</Sessions>"
     block: |2
-                  <SessionInitiator type="Chaining" Location="/{{ item['location'] }}" isDefault="false" id="{{ item['id'] }}" relayState="cookie">
+                  <SessionInitiator type="Chaining" Location="/{{ shibbolethproxy_item['location'] }}" isDefault="false" id="{{ shibbolethproxy_item['id'] }}" relayState="cookie">
                     <SessionInitiator type="SAML2" defaultACSIndex="1" acsByIndex="false" template="bindingTemplate.html"/>
-                    <SessionInitiator type="SAMLDS" URL="{{ item['ds'] }}" />
+                    <SessionInitiator type="SAMLDS" URL="{{ shibbolethproxy_item['ds'] }}" />
                   </SessionInitiator>
-  with_items: "{{ userauth_flows }}"
+  with_items: "{{ shibbolethproxy_flows }}"
+  loop_control:
+    loop_var: shibbolethproxy_item
   notify:
    - restart shibboleth-sp
 
-- name: Flows | Create | Authentication methods | flow | directories
+- name: ShibSP | Flows | Create | Authentication methods | flow | directories
   file:
     state: directory
-    dest: "{{ shibbolethidp_idp_home }}/flows/authn/{{ item['location'] }}"
-  with_items: "{{ userauth_flows }}"
+    dest: "{{ shibbolethidp_idp_home }}/flows/authn/{{ shibbolethproxy_item['location'] }}"
+  with_items: "{{ shibbolethproxy_flows }}"
+  loop_control:
+    loop_var: shibbolethproxy_item
 
-- name: Flows | Create | Authentication method | flow | files
+- name: ShibSP | Flows | Create | Authentication method | flow | files
   copy:
-    dest: "{{ shibbolethidp_idp_home }}/flows/authn/{{ item['location'] }}/{{ item['location'] | lower }}-flow.xml"
+    dest: "{{ shibbolethidp_idp_home }}/flows/authn/{{ shibbolethproxy_item['location'] }}/{{ shibbolethproxy_item['location'] | lower }}-flow.xml"
     content: |2
       <?xml version="1.0" encoding="UTF-8"?>
       <flow xmlns="http://www.springframework.org/schema/webflow"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="http://www.springframework.org/schema/webflow http://www.springframework.org/schema/webflow/spring-webflow.xsd"
             parent="authn/Shib">
-        <view-state id="ExternalTransfer" view="externalRedirect:#{flowRequestContext.getActiveFlow().getApplicationContext().getBean('shibboleth.authn.{{ item['location'] }}.externalAuthnPath')}&amp;forceAuthn=#{opensamlProfileRequestContext.getSubcontext(T(net.shibboleth.idp.authn.context.AuthenticationContext)).isForceAuthn()}&amp;isPassive=#{opensamlProfileRequestContext.getSubcontext(T(net.shibboleth.idp.authn.context.AuthenticationContext)).isPassive()}&amp;target=#{flowExecutionUrl}%26_eventId_proceed%3D1">
+        <view-state id="ExternalTransfer" view="externalRedirect:#{flowRequestContext.getActiveFlow().getApplicationContext().getBean('shibboleth.authn.{{ shibbolethproxy_item['location'] }}.externalAuthnPath')}&amp;forceAuthn=#{opensamlProfileRequestContext.getSubcontext(T(net.shibboleth.idp.authn.context.AuthenticationContext)).isForceAuthn()}&amp;isPassive=#{opensamlProfileRequestContext.getSubcontext(T(net.shibboleth.idp.authn.context.AuthenticationContext)).isPassive()}&amp;target=#{flowExecutionUrl}%26_eventId_proceed%3D1">
           <transition to="ValidateShibFlowAuthentication" />
         </view-state>
       </flow>
-  with_items: "{{ userauth_flows }}"
+  with_items: "{{ shibbolethproxy_flows }}"
+  loop_control:
+    loop_var: shibbolethproxy_item
 
-- name: Flows | Configure | AuthenticationFlows | authn/general-authn.xml
+- name: ShibSP | Flows | Configure | AuthenticationFlows | authn/general-authn.xml
   blockinfile:
     dest: "{{ shibbolethidp_idp_home }}/conf/authn/general-authn.xml"
-    marker: "      <!-- {mark} ansible managed - {{ item['location'] }} autentication flow  -->"
+    marker: "      <!-- {mark} ansible managed - {{ shibbolethproxy_item['location'] }} autentication flow  -->"
     insertbefore: "</util:list>"
     block: |2
-              <bean id="authn/{{ item['location'] }}" parent="shibboleth.AuthenticationFlow"
+              <bean id="authn/{{ shibbolethproxy_item['location'] }}" parent="shibboleth.AuthenticationFlow"
                     p:nonBrowserSupported="false" p:forcedAuthenticationSupported="true"/>
-  with_items: "{{ userauth_flows }}"
+  with_items: "{{ shibbolethproxy_flows }}"
+  loop_control:
+    loop_var: shibbolethproxy_item
   notify:
    - restart shibboleth-idp
 
-- name: Flows | Configure | AuthenticationFlows | authn/shib-authn-config.xml
+- name: ShibSP | Flows | Configure | AuthenticationFlows | authn/shib-authn-config.xml
   blockinfile:
     dest: "{{ shibbolethidp_idp_home }}/conf/authn/shib-authn-config.xml"
-    marker: "    <!-- {mark} ansible managed - {{ item['location'] }} autentication flow  -->"
+    marker: "    <!-- {mark} ansible managed - {{ shibbolethproxy_item['location'] }} autentication flow  -->"
     insertafter: "default-destroy-method="
     block: |2
-          <bean id="shibboleth.authn.{{ item['location'] }}.externalAuthnPath" class="java.lang.String"
-                c:_0="https://{{ shibbolethidp_fqdn }}/Shibboleth.sso/{{ item['location'] }}?foo=bar" />
-  with_items: "{{ userauth_flows }}"
+          <bean id="shibboleth.authn.{{ shibbolethproxy_item['location'] }}.externalAuthnPath" class="java.lang.String"
+                c:_0="https://{{ shibbolethidp_fqdn }}/Shibboleth.sso/{{ shibbolethproxy_item['location'] }}?foo=bar" />
+  with_items: "{{ shibbolethproxy_flows }}"
+  loop_control:
+    loop_var: shibbolethproxy_item
   notify:
    - restart shibboleth-idp
 
-- name: Flows | Configure | Flows | idp.properties
+- name: ShibSP | Flows | Configure | Flows | idp.properties
   lineinfile:
     dest: "{{ shibbolethidp_idp_home }}/conf/idp.properties"
-    regexp: ^(?!.*{{ userauth_item['location'] }})(idp.authn.flows=.*)$
-    line: \1|{{ userauth_item['location'] }}
+    regexp: ^(?!.*{{ shibbolethproxy_item['location'] }})(idp.authn.flows=.*)$
+    line: \1|{{ shibbolethproxy_item['location'] }}
     backrefs: yes
-  with_items: "{{ userauth_flows }}"
+  with_items: "{{ shibbolethproxy_flows }}"
   loop_control:
-    loop_var: userauth_item
+    loop_var: shibbolethproxy_item

@@ -1,11 +1,26 @@
---
-- name: Shibboleth-Proxy | Disco | Download | Plugin v{{ shibbolethproxy_discoplugin_version }}
+- name: Disco | Download | Plugin v{{ shibbolethproxy_discoplugin_version }}
   unarchive:
     extra_opts: ['--strip-components=1']
     src: "{{ shibbolethproxy_discoplugin_location }}/releases/download/{{ shibbolethproxy_discoplugin_version }}/shibboleth-idp-authn-discovery-{{ shibbolethproxy_discoplugin_version | regex_replace('[^0-9.]', '') }}.tar.gz"
     remote_src: yes
     dest: "{{ shibbolethidp_idp_home }}"
+    creates: "{{ shibbolethidp_idp_home }}/edit-webapp/WEB-INF/lib/idp-authn-api-discovery-{{ shibbolethproxy_discoplugin_version | regex_replace('[^0-9.]', '') }}.jar"
   notify: rebuild shibboleth-idp
+
+- name: Disco | Detect | Duplicate | Plugins
+  find:
+    paths: "{{ shibbolethidp_idp_home }}/edit-webapp/WEB-INF/lib"
+    patterns: "^(?!.*({{ shibbolethproxy_discoplugin_version | regex_replace('[^0-9.]', '') }})).*discovery"
+    use_regex: true
+  register: files_to_delete
+
+- name: Disco | Delete | Older | Plugins
+  file:
+    path: "{{ shibbolethproxy_item.path }}"
+    state: absent
+  with_items: "{{ files_to_delete.files }}"
+  loop_control:
+    loop_var: shibbolethproxy_item
 
 # - name: Shibboleth-Proxy Disco
 # ===========================================
