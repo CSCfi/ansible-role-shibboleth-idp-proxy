@@ -35,15 +35,15 @@ Example Playbook
 
     - hosts: all
       vars:
-      	shibbolethidp_configurables: ['ldap','shibsp','oidc','disco','certs']
-	shibbolethidp_jetty_secure_port: 8443
-	shibbolethidp_mpassidrelease: 0.9.4
-	
-	shibbolethsp_configurables: ['certs']
-	
-	ansible_fqdn: my.proxy.localhost
-	
-	apache_configurables: ['certs']
+        shibbolethidp_configurables: ['ldap','shibsp','oidc','disco','certs']
+       	shibbolethidp_jetty_secure_port: 8443
+        shibbolethidp_mpassidrelease: 0.9.4
+
+        shibbolethsp_configurables: ['certs']
+
+        ansible_fqdn: my.proxy.localhost
+
+        apache_configurables: ['certs']
 	
       roles:
       	- { role: CSCfi.shibboleth-proxy, configurables: ['flows','disco'] }
