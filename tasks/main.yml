@@ -29,7 +29,11 @@
   with_filetree: "{{ role_path }}/templates"
   when: item.state == 'file'
 
+- name: Main | Configurables | Mandatory | Proxy
+  include: shibbolethproxy_proxy.yml
+
 - name: Main | Configurables
   include: shibbolethproxy_{{ item }}.yml
   with_items: "{{ configurables }}"
-  when: configurables is defined
+  when: configurables is defined and configurables!="" and configurables !="proxy"
+
