@@ -35,8 +35,8 @@ Example Playbook
 
     - hosts: all
       vars:
-        shibbolethidp_configurables: ['ldap','shibsp','oidc','disco','certs']
-       	shibbolethidp_jetty_secure_port: 8443
+        shibbolethidp_configurables: ['ldap','oidc','certs']
+	shibbolethidp_jetty_secure_port: 8443
         shibbolethidp_mpassidrelease: 0.9.4
 
         shibbolethsp_configurables: ['certs']
