@@ -1,11 +1,11 @@
-- name: ShibSP | Download | Plugin v{{ shibbolethidp_shibspplugin_version }}
+- name: ShibSP | Shibboleth IdP | Download | Plugin v{{ shibbolethproxy_shibspplugin_version }}
   unarchive:
     extra_opts: ['--strip-components=1']
     src: "{{ shibbolethproxy_shibspplugin_location }}/releases/download/{{ shibbolethproxy_shibspplugin_version }}/shibboleth-idp-authn-shibsp-{{ shibbolethproxy_shibspplugin_version | regex_replace('[^0-9.]', '') }}.tar.gz"
     remote_src: yes
     dest: "{{ shibbolethidp_idp_home }}"
     creates: "{{ shibbolethidp_idp_home }}/edit-webapp/WEB-INF/lib/idp-authn-api-shibsp-{{ shibbolethproxy_shibspplugin_version | regex_replace('[^0-9.]', '') }}.jar"
-    group: jetty 
+    group: jetty
     owner: root
     mode: 0640
   notify: rebuild shibboleth-idp
@@ -17,13 +17,30 @@
     use_regex: true
   register: files_to_delete
 
-- name: ShibSP | Delete | Older | Plugins
+- name: ShibSP | Shibboleth IdP | Delete | Older | Plugins
   file:
     path: "{{ shibbolethproxy_item.path }}"
     state: absent
-  with_items: "{{ files_to_delete.files }}"    
-  loop_control:    
+  with_items: "{{ files_to_delete.files }}"
+  loop_control:
     loop_var: shibbolethproxy_item
+
+- name: ShibSP | Shibboleth IdP | Configure | populateHeaders
+  xml:
+    xpath: "{{ shibbolethproxy_item.xpath }}"
+    attribute: "{{ shibbolethproxy_item.attribute }}"
+    value: "{{ shibbolethproxy_item.value }}"
+    ensure: "{{ shibbolethproxy_item.ensure }}"
+    file: "{{ shibbolethidp_idp_home }}/flows/authn/Shib/shib-beans.xml"
+    namespaces:
+      x: http://www.springframework.org/schema/beans
+      p: http://www.springframework.org/schema/p
+  with_items:
+    - { xpath: "//x:bean[@id='ValidateShibbolethAuthentication']", attribute: "p:populateHeaders", value: "true", ensure: present }
+    - { xpath: "//x:bean[@id='ValidateShibbolethAuthentication']", attribute: "p:usernameAttribute", value: "eppn,virtuPrincipalName", ensure: present }
+  loop_control:
+    loop_var: shibbolethproxy_item
+  notify: restart shibboleth-idp
 
 - name: ShibSP | Flows | Configure | SessionInitiator | /etc/shibboleth/shibboleth2.xml
   blockinfile:
