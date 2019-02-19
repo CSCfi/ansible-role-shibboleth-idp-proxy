@@ -5,6 +5,9 @@
     remote_src: yes
     dest: "{{ shibbolethidp_idp_home }}"
     creates: "{{ shibbolethidp_idp_home }}/edit-webapp/WEB-INF/lib/idp-authn-api-shibsp-{{ shibbolethproxy_shibspplugin_version | regex_replace('[^0-9.]', '') }}.jar"
+    group: jetty 
+    owner: root
+    mode: 0640
   notify: rebuild shibboleth-idp
 
 - name: ShibSP | Detect | Duplicate | Plugins
@@ -45,6 +48,8 @@
   with_items: "{{ shibbolethproxy_flows }}"
   loop_control:
     loop_var: shibbolethproxy_item
+  notify: 
+    - restart shibboleth-idp
 
 - name: ShibSP | Flows | Create | Authentication method | flow | files
   copy:
@@ -62,6 +67,7 @@
   with_items: "{{ shibbolethproxy_flows }}"
   loop_control:
     loop_var: shibbolethproxy_item
+  notify: restart shibboleth-idp
 
 - name: ShibSP | Flows | Configure | AuthenticationFlows | authn/general-authn.xml
   blockinfile:
@@ -100,3 +106,5 @@
   with_items: "{{ shibbolethproxy_flows }}"
   loop_control:
     loop_var: shibbolethproxy_item
+  notify:
+    - restart shibboleth-idp

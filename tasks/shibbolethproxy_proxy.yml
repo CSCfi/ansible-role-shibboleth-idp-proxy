@@ -49,6 +49,9 @@
         <Arg><New class="org.eclipse.jetty.server.ForwardedRequestCustomizer"/></Arg>
       </Call>
 
+# - name: Shibboleth SP related configurations
+# ============================================
+
 - name: Remove the subjective attribute of the rating element
   xml:
     path: /etc/shibboleth/shibboleth2.xml
@@ -85,6 +88,22 @@
 
 # - name: Shibboleth-IdP related configration
 # ===========================================
+- name: Proxy | Shibboleth IdP | Configure | populateHeaders
+  xml:
+    xpath: "{{ shibbolethproxy_item.xpath }}"
+    attribute: "{{ shibbolethproxy_item.attribute }}"
+    value: "{{ shibbolethproxy_item.value }}"
+    ensure: "{{ shibbolethproxy_item.ensure }}"
+    file: "{{ shibbolethidp_idp_home }}/flows/Shib/shib-beans.xml"
+    namespaces:
+      x: http://www.springframework.org/schema/beans
+      p: http://www.springframework.org/schema/p
+  with_items:
+    - { xpath: "//x:bean[@id='ValidateShibbolethAuthentication']", attribute: "p:populateHeaders", value: "true", ensure: present }
+    - { xpath: "//x:bean[@id='ValidateShibbolethAuthentication']", attribute: "p:usernameAttribute", value: "eppn,virtuPrincipalName", ensure: present }
+  loop_control:
+    loop_var: shibbolethproxy_item
+  notify: restart shibboleth-idp
 
 #- name: IdP.Service | {{ idp }} | IdP | Localization | Enable
 #  blockinfile:

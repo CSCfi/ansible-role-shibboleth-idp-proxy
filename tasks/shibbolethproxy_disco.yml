@@ -5,6 +5,9 @@
     remote_src: yes
     dest: "{{ shibbolethidp_idp_home }}"
     creates: "{{ shibbolethidp_idp_home }}/edit-webapp/WEB-INF/lib/idp-authn-api-discovery-{{ shibbolethproxy_discoplugin_version | regex_replace('[^0-9.]', '') }}.jar"
+    group: jetty
+    owner: root
+    mode: 0640
   notify: rebuild shibboleth-idp
 
 - name: Disco | Detect | Duplicate | Plugins
