@@ -11,7 +11,7 @@
     force: no
     group: jetty
     owner: jetty
-    mode: 0775
+    mode: 0550
   
 - name: "Main | Template | Directories | Create"
   file:
@@ -37,13 +37,10 @@
   with_items: "{{ configurables }}"
   when: configurables is defined and configurables!="" and configurables !="proxy"
 
-- file: path={{ shibbolethidp_idp_home }}/conf state=directory owner=root group=jetty recurse=yes mode=0750
-- file: path={{ shibbolethidp_idp_home }}/views state=directory owner=root group=jetty recurse=yes mode=0750
-- file: path={{ shibbolethidp_idp_home }}/flows state=directory owner=root group=jetty recurse=yes mode=0750
-
-- shell: chmod 755 /etc/pki/tls/private/{{ ansible_fqdn }}*.key
-  notify:
-    - restart shibboleth-sp
-    - restart shibboleth-idp
-
-
+- debug: msg="trigger handlers"
+  notify: 
+    - reown shibboleth-idp
+    - reown privatekeys-sp
+    - reown privatekeys-idp
+    - reown privatekeys-apache
+  changed_when: true
