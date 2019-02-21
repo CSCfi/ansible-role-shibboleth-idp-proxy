@@ -49,7 +49,7 @@
     insertbefore: "</Sessions>"
     block: |2
                   <SessionInitiator type="Chaining" Location="/{{ shibbolethproxy_item['location'] }}" isDefault="false" id="{{ shibbolethproxy_item['id'] }}" relayState="cookie">
-                    <SessionInitiator type="SAML2" defaultACSIndex="1" acsByIndex="false" template="bindingTemplate.html"/>
+                    <SessionInitiator type="SAML2" defaultACSIndex="1" acsByIndex="false" template="bindingTemplate.html" />
                     <SessionInitiator type="SAMLDS" URL="{{ shibbolethproxy_item['ds'] }}" />
                   </SessionInitiator>
   with_items: "{{ shibbolethproxy_flows }}"
@@ -93,7 +93,7 @@
     insertbefore: "</util:list>"
     block: |2
               <bean id="authn/{{ shibbolethproxy_item['location'] }}" parent="shibboleth.AuthenticationFlow"
-                    p:nonBrowserSupported="false" p:forcedAuthenticationSupported="true"/>
+                    p:nonBrowserSupported="false" p:forcedAuthenticationSupported="true" />
   with_items: "{{ shibbolethproxy_flows }}"
   loop_control:
     loop_var: shibbolethproxy_item
