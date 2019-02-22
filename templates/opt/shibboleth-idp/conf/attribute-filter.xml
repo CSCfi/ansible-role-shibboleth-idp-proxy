@@ -42,6 +42,9 @@
         <AttributeRule attributeID="schacHomeOrganizationType">
           <PermitValueRule xsi:type="ANY" />
         </AttributeRule>
+        <AttributeRule attributeID="subject">
+          <PermitValueRule xsi:type="ANY" />
+        </AttributeRule>
 
   </AttributeFilterPolicy>
 
