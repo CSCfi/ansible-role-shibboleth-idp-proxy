@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/CSCfi/ansible-role-shibboleth-proxy.svg?branch=master)](https://travis-ci.org/CSCfi/ansible-role-shibboleth-proxy)
+[![Build Status](https://travis-ci.org/CSCfi/ansible-role-shibboleth-idp-proxy.svg?branch=master)](https://travis-ci.org/CSCfi/ansible-role-shibboleth-idp-proxy)
 
 Ansible-Role: Shibboleth IdP Proxy
 =========
@@ -46,7 +46,7 @@ Example Playbook
     - hosts: all
       vars:
         shibbolethidp_configurables: ['ldap','oidc','certs']
-	shibbolethidp_jetty_secure_port: 8443
+        shibbolethidp_jetty_secure_port: 8443
         shibbolethidp_mpassidrelease: 0.9.4
 
         shibbolethsp_configurables: ['certs']

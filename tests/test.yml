@@ -2,4 +2,5 @@
 ---
 - hosts: all
   roles:
+    - { role: cmprescott.xml }
     - role_under_test

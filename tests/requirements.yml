@@ -1,4 +1,5 @@
 ---
+- src: cmprescott.xml
 - src: CSCfi.apache
 - src: CSCfi.shibboleth-sp
 - src: CSCfi.jetty

@@ -1,5 +1,5 @@
 galaxy_info:
-  role_name: shibboleth-proxy
+  role_name: shibboleth-idp-proxy
   author: Sami Silén
   description: Shibboleth Proxy for RedHat and Debian
   company: CSC - IT Center for Science
