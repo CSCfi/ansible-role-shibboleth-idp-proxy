@@ -90,7 +90,7 @@
     </AttributeDefinition>
     
 
-   <AttributeDefinition id="cn" xsi:type="ScriptedAttribute"">
+   <AttributeDefinition id="cn" xsi:type="ScriptedAttribute">
         <resolver:AttributeEncoder xsi:type="enc:SAML2String" name="urn:oid:2.5.4.3" friendlyName="cn" encodeType="false" />
         <resolver:AttributeEncoder xsi:type="oidcext:OIDCString" name="name" setToToken="true" />
         <Script><![CDATA[
@@ -106,14 +106,14 @@
              }
           }
         }
-        ]]></ad:Script>
+        ]]></Script>
     </AttributeDefinition>
     
     
-    <AttributeDefinition id="sn" xsi:type="ScriptedAttribute"">
+    <AttributeDefinition id="sn" xsi:type="ScriptedAttribute">
         <resolver:AttributeEncoder xsi:type="enc:SAML2String" name="urn:oid:2.5.4.4" friendlyName="sn" encodeType="false" />
         <resolver:AttributeEncoder xsi:type="oidcext:OIDCString" name="family_name" setToToken="true" />
-        <ad:Script><![CDATA[
+        <Script><![CDATA[
         authnContext = resolutionContext.getParent().getSubcontext("net.shibboleth.idp.authn.context.AuthenticationContext");
 
         if (authnContext !== null) {
@@ -132,10 +132,10 @@
     </AttributeDefinition>
 
 
-    <AttributeDefinition id="givenName" xsi:type="ScriptedAttribute"">
+    <AttributeDefinition id="givenName" xsi:type="ScriptedAttribute">
         <resolver:AttributeEncoder xsi:type="enc:SAML2String" name="urn:oid:2.5.4.42" friendlyName="givenName" encodeType="false" />
         <resolver:AttributeEncoder xsi:type="oidcext:OIDCString" name="given_name" setToToken="true" />
-        <ad:Script><![CDATA[
+        <Script><![CDATA[
         authnContext = resolutionContext.getParent().getSubcontext("net.shibboleth.idp.authn.context.AuthenticationContext");
         if (authnContext !== null) {
           subject = authnContext.getAuthenticationResult().getSubject();
@@ -152,10 +152,10 @@
     </AttributeDefinition>
    
        
-    <AttributeDefinition id="displayName" xsi:type="ScriptedAttribute"">
+    <AttributeDefinition id="displayName" xsi:type="ScriptedAttribute">
         <resolver:AttributeEncoder xsi:type="enc:SAML2String" name="urn:oid:2.16.840.1.113730.3.1.241" friendlyName="givenName" encodeType="false" />
         <resolver:AttributeEncoder xsi:type="oidcext:OIDCString" name="displayName" setToToken="true" />
-        <ad:Script><![CDATA[
+        <Script><![CDATA[
         authnContext = resolutionContext.getParent().getSubcontext("net.shibboleth.idp.authn.context.AuthenticationContext");
         if (authnContext !== null) {
           subject = authnContext.getAuthenticationResult().getSubject();
@@ -173,10 +173,10 @@
     </AttributeDefinition>  
     
     
-    <AttributeDefinition id="schacHomeOrganization" xsi:type="ScriptedAttribute"">
+    <AttributeDefinition id="schacHomeOrganization" xsi:type="ScriptedAttribute">
         <resolver:AttributeEncoder xsi:type="enc:SAML2String" name="urn:oid:1.3.6.1.4.1.25178.1.2.9" friendlyName="schacHomeOrganization" encodeType="false" />
         <resolver:AttributeEncoder xsi:type="oidcext:OIDCString" name="schacHomeOrganization" setToToken="true" />
-        <ad:Script><![CDATA[
+        <Script><![CDATA[
         authnContext = resolutionContext.getParent().getSubcontext("net.shibboleth.idp.authn.context.AuthenticationContext");
         if (authnContext !== null) {
           subject = authnContext.getAuthenticationResult().getSubject();
@@ -193,10 +193,10 @@
     </AttributeDefinition>
 
 
-    <AttributeDefinition id="schacHomeOrganizationType" xsi:type="ScriptedAttribute"">
+    <AttributeDefinition id="schacHomeOrganizationType" xsi:type="ScriptedAttribute">
         <resolver:AttributeEncoder xsi:type="enc:SAML2String" name="urn:oid:1.3.6.1.4.1.25178.1.2.10" friendlyName="schacHomeOrganizationType" encodeType="false" />
         <resolver:AttributeEncoder xsi:type="oidcext:OIDCString" name="schacHomeOrganizationType" setToToken="true" />
-        <ad:Script><![CDATA[
+        <Script><![CDATA[
         authnContext = resolutionContext.getParent().getSubcontext("net.shibboleth.idp.authn.context.AuthenticationContext");
         if (authnContext !== null) {
           subject = authnContext.getAuthenticationResult().getSubject();
