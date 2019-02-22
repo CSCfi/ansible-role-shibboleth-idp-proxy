@@ -88,6 +88,25 @@
 
 # - name: Shibboleth-IdP related configration
 # ===========================================
+
+- name: Shibboleth IdP | OIDC | Configure | relaying-party.xml | remove consents and signs
+  xml:
+    xpath: "{{ shibbolethidp_item }}"
+    state: "absent"
+    file: /opt/shibboleth-idp/conf/relying-party.xml
+    namespaces:
+      x: http://www.springframework.org/schema/beans
+      p: http://www.springframework.org/schema/p
+  with_items:
+    - "//x:bean[@parent='SAML2.SSO']/@p:postAuthenticationFlows"
+    - "//x:bean[@parent='SAML2.SSO']/@p:signAssertions"
+    - "//x:bean[@parent='SAML2.SSO']/@p:signResponses"
+    - "//x:bean[@parent='SAML2.SSO']/@p:encryptAssertions"
+    - "//x:bean[@parent='OIDC.SSO']/@p:postAuthenticationFlows"
+  loop_control:
+    loop_var: shibbolethidp_item
+  notify: restart shibboleth-idp
+
 #- name: IdP.Service | {{ idp }} | IdP | Localization | Enable
 #  blockinfile:
 #    dest: "{{ shibbolethidp_idp_home }}/conf/mvc-beans.xml"
