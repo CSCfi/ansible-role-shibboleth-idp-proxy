@@ -220,6 +220,14 @@
     </AttributeDefinition>
     
 
+    <!-- Subject Identifier is a attribute that must always be resolved.
+    There has to be exactly one resolved and filtered attribute that would be encoded as 'sub'.
+    This example attribute (the data connector actually ) will generate public or pairwise 'sub' depending on client registration data.  -->
+
+    <AttributeDefinition id="subject" xsi:type="Simple" activationConditionRef="SubjectRequired">
+       <InputDataConnector ref="computedSubjectId" attributeNames="subjectId"/>
+       <AttributeEncoder xsi:type="oidcext:OIDCString" name="sub" />
+    </AttributeDefinition>
     
     <!--
     <AttributeDefinition id="groupNames" xsi:type="ad:Simple" sourceAttributeID="groupNames">
@@ -270,5 +278,15 @@
             ]]>
         </FilterTemplate>
     </DataConnector>
+
+    <DataConnector id="computedSubjectId" xsi:type="ComputedId"
+       		generatedAttributeID="subjectId"
+       		sourceAttributeID="%{idp.oidc.subject.sourceAttribute}"
+       		salt="%{idp.oidc.subject.salt}"
+			algorithm="%{idp.oidc.subject.algorithm:SHA}"
+      	 	encoding="%{idp.oidc.subject.encoding:BASE32}">
+        <Dependency ref="%{idp.oidc.subject.sourceAttribute}"/>
+    </DataConnector>    
+    
 	
 </AttributeResolver>
