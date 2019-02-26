@@ -18,4 +18,4 @@ galaxy_info:
 dependencies:
   - { src: CSCfi.apache, version: v1.0.6, configurables: '{{ apache_configurables | default(None) }}', when: update is not defined  }
   - { src: CSCfi.shibboleth-sp, version: v1.0.7, configurables: "{{ shibbolethsp_configurables | default(None) }}", when: update is not defined } 
-  - { src: CSCfi.shibboleth-idp, version: v1.1.5, configurables: "{{ shibbolethidp_configurables | default(None) }}", when: update is not defined }
+  - { src: CSCfi.shibboleth-idp, version: v1.1.5, configurables: "{{ shibbolethidp_configurables | default(None) }}", shibbolethidp_wwwroot: "{{ shibbolethproxy_wwwroot }}", when: update is not defined }
