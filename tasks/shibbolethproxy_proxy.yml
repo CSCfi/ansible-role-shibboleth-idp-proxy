@@ -81,7 +81,7 @@
     content: |2
               <AttributeResolver type="Chaining">
                 <AttributeResolver type="Query" subjectMatch="true"/>
-                <AttributeResolver type="Template" sources="virtuLocalID virtuHomeOrganization" dest="virtuPrincipalName">
+                <AttributeResolver type="Template" sources="virtuLocalID virtuHomeOrganization" dest="virtuPersonPrincipalName">
                   <Template>$virtuLocalID@$virtuHomeOrganization</Template>
                 </AttributeResolver>
               </AttributeResolver>

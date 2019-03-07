@@ -11,3 +11,16 @@ shibbolethproxy_flows:
   - id: "Haka-test"
     ds: "https://testsp.funet.fi/shibboleth/WAYF"
     location: "LoginHakaTest"
+
+shibbolethproxy_attributes:
+  ScriptedAttribute:
+    - id: eduPersonPrincipalName
+    - id: mail
+    - id: displayName
+    - id: givenName
+    - id: cn
+    - id: sn
+    - id: schacHomeOrganization
+    - id: schacHomeOrganizationType
+  PrincipalName:
+    - id: uid
