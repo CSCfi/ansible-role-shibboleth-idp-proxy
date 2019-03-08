@@ -58,10 +58,11 @@
 {% if shibbolethproxy_attributes['myLDAP'] is defined %}
 {%for attribute in shibbolethproxy_attributes['myLDAP']%}
     <AttributeDefinition id="{{ attribute.id }}" xsi:type="{{ attribute.type }}">
-      <InputDataConnector ref="myLDAP" attributeNames="{{ attribute.id }}" />
-      <AttributeEncoder xsi:type="SAML2String" name="{{ attribute.name }}" friendlyName="{{ attribute.friendlyname }}" encodeType="false"/>
-      <AttributeEncoder xsi:type="oidcext:OIDCString" name="{{ attribute.oidcname }}" placeToIDToken="true" setToToken="true"  />
+      <InputDataConnector ref="myLDAP" attributeNames="{{ attribute.sourceid if attribute.sourceid is defined else attribute.id}}" />
+      <AttributeEncoder xsi:type="SAML2String" name="{{ attribute.name }}" friendlyName="{{ attribute.friendlyname if attribute.friendlyname is defined else shibbolethidp_attributes[attribute.id]['friendlyname'] }}" encodeType="false"/>
+      <AttributeEncoder xsi:type="oidcext:OIDCString" name="{{ attribute.oidcname if attribute.oidcname is defined else shibbolethidp_attributes[attribute.id]['oidcname'] }}" placeToIDToken="true" setToToken="true" {{ attribute.extra if attribute.extra is defined else '' }} />
     </AttributeDefinition>
+
 {% endfor %}
 {% endif %}
     
@@ -76,24 +77,6 @@
     </AttributeDefinition>
     {% endif %}
     <!--
-    <AttributeDefinition id="groupNames" xsi:type="ad:Simple" sourceAttributeID="groupNames">
-        <resolver:Dependency ref="myLDAP" />
-        <resolver:AttributeEncoder xsi:type="SAML2String" name="urn:oid:1.3.6.1.4.1.8057.2.80.26" friendlyName="groupNames" encodeType="false"/>
-        <resolver:AttributeEncoder xsi:type="oidcext:OIDCString" name="group_names" placeToIDToken="true" setToToken="true" asArray="true" />
-    </AttributeDefinition>
-
-    <AttributeDefinition id="eduPersonPrincipalNames" xsi:type="ad:Simple" sourceAttributeID="eduPersonPrincipalNames">
-        <resolver:Dependency ref="myLDAP" />
-        <resolver:AttributeEncoder xsi:type="SAML2String" name="urn:oid:1.3.6.1.4.1.8057.2.80.10" friendlyName="eduPersonPrincipalNames" encodeType="false"/>
-        <resolver:AttributeEncoder xsi:type="oidcext:OIDCString" name="linkedIds" placeToIDToken="true" setToToken="true" asArray="true" />
-    </AttributeDefinition>
-
-    <AttributeDefinition id="fairdataId" xsi:type="ad:Simple" sourceAttributeID="login;x-ns-fdid-persistent-shadow">
-        <resolver:Dependency ref="myLDAP" />
-        <resolver:AttributeEncoder xsi:type="SAML2String" name="urn:oid:1.3.6.1.4.1.8057.2.80.9" friendlyName="login;x-ns-fdid-persistent-shadow" encodeType="false"/>
-    </AttributeDefinition	>
-    -->
-
     <!--
     This is an example of an attribute sourced from a data connector.
     -->
