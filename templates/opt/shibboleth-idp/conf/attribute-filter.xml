@@ -9,12 +9,12 @@
   <AttributeFilterPolicy id="releaseToAnyone">
 
     <PolicyRequirementRule xsi:type="ANY"/>
-{% for attribute in shibbolethproxy_attributes['ScriptedAttribute'] %}
+{% for attribute in shibbolethproxy_attributes['ScriptedAttribute'] | selectattr('filter', 'undefined') %}
     <AttributeRule attributeID="{{ attribute.id }}">
       <PermitValueRule xsi:type="ANY" />
     </AttributeRule>
 {% endfor %}
-{% for attribute in shibbolethproxy_attributes['myLDAP'] %}
+{% for attribute in shibbolethproxy_attributes['myLDAP'] | selectattr('filter', 'undefined') %}
     <AttributeRule attributeID="{{ attribute.id }}">
       <PermitValueRule xsi:type="ANY" />
     </AttributeRule>
