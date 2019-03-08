@@ -76,7 +76,7 @@
        <AttributeEncoder xsi:type="oidcext:OIDCString" name="sub" />
     </AttributeDefinition>
     {% endif %}
-    <!--
+
     <!--
     This is an example of an attribute sourced from a data connector.
     -->
