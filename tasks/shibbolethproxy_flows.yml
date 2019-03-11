@@ -37,7 +37,7 @@
       p: http://www.springframework.org/schema/p
   with_items:
     - { xpath: "//x:bean[@id='ValidateShibbolethAuthentication']", attribute: "p:populateHeaders", value: "true", ensure: present }
-    - { xpath: "//x:bean[@id='ValidateShibbolethAuthentication']", attribute: "p:usernameAttribute", value: "eppn,virtuPrincipalName", ensure: present }
+    - { xpath: "//x:bean[@id='ValidateShibbolethAuthentication']", attribute: "p:usernameAttribute", value: "eppn,virtuPersonPrincipalName", ensure: present }
   loop_control:
     loop_var: shibbolethproxy_item
   notify: restart shibboleth-idp
