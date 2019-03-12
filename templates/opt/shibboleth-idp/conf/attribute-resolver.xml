@@ -23,16 +23,16 @@
     <!--      Attribute Definitions                 -->
     <!-- ========================================== -->
 
-{%for attribute in shibbolethproxy_attributes['PrincipalName']%}
+{% for attribute in shibbolethproxy_attributes['PrincipalName'] | default([]) %}
     <AttributeDefinition id="{{ attribute.id }}" xsi:type="PrincipalName">
       <AttributeEncoder xsi:type="SAML2String" name="{{ shibbolethidp_attributes[attribute.id]['name'] }}" friendlyName="{{ shibbolethidp_attributes[attribute.id].friendlyname }}" encodeType="false" />
-{%if 'oidc' in shibbolethidp_configurables%}
+{% if 'oidc' in shibbolethidp_configurables %}
       <AttributeEncoder xsi:type="oidcext:OIDCString" name="{{ shibbolethidp_attributes[attribute.id]['oidcname'] }}" setToToken="true" />
-{%endif%}
+{% endif %}
     </AttributeDefinition>
-{%endfor%}
+{% endfor %}
 
-{% for attribute in shibbolethproxy_attributes['ScriptedAttribute'] %}
+{% for attribute in shibbolethproxy_attributes['ScriptedAttribute'] | default([]) %}
     <AttributeDefinition id="{{ attribute.id }}" xsi:type="ScriptedAttribute">
       <AttributeEncoder xsi:type="SAML2String" name="{{ attribute.name if attribute.name is defined else shibbolethidp_attributes[attribute.id]['name'] }}" friendlyName="{{ attribute.friendlyname if attribute.friendlyname is defined else shibbolethidp_attributes[attribute.id]['friendlyname'] }}" encodeType="false" />
 {% if 'oidc' in shibbolethidp_configurables %}
@@ -55,8 +55,7 @@
     </AttributeDefinition>
 
 {% endfor %}
-{% if shibbolethproxy_attributes['myLDAP'] is defined %}
-{%for attribute in shibbolethproxy_attributes['myLDAP']%}
+{% for attribute in shibbolethproxy_attributes['myLDAP'] | default([]) %}
     <AttributeDefinition id="{{ attribute.id }}" xsi:type="{{ attribute.type }}">
       <InputDataConnector ref="myLDAP" attributeNames="{{ attribute.sourceid if attribute.sourceid is defined else attribute.id}}" />
       <AttributeEncoder xsi:type="SAML2String" name="{{ attribute.name }}" friendlyName="{{ attribute.friendlyname if attribute.friendlyname is defined else shibbolethidp_attributes[attribute.id]['friendlyname'] }}" encodeType="false"/>
@@ -64,7 +63,6 @@
     </AttributeDefinition>
 
 {% endfor %}
-{% endif %}
     
     {% if 'oidc' in shibbolethidp_configurables %}
     <!-- Subject Identifier is a attribute that must always be resolved.
