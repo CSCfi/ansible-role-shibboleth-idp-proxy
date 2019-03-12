@@ -93,7 +93,7 @@
         <Value>member</Value>
       </Attribute>
     </DataConnector>
-{% if shibbolethproxy_attributes['myLDAP'] is defined %}    
+{% if 'ldap' in shibbolethidp_configurables %}    
     <DataConnector id="myLDAP" xsi:type="LDAPDirectory"
       ldapURL="%{idp.attribute.resolver.LDAP.ldapURL}"
       baseDN="%{idp.attribute.resolver.LDAP.baseDN}"
