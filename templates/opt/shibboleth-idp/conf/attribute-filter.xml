@@ -14,11 +14,14 @@
       <PermitValueRule xsi:type="ANY" />
     </AttributeRule>
 {% endfor %}
+
+{% if shibbolethproxy_attributes['myLDAP'] is defined %}
 {% for attribute in shibbolethproxy_attributes['myLDAP'] | selectattr('filter', 'undefined') %}
     <AttributeRule attributeID="{{ attribute.id }}">
       <PermitValueRule xsi:type="ANY" />
     </AttributeRule>
 {% endfor %}
+{% endif %}
 
   </AttributeFilterPolicy>
 {% if 'oidc' in shibbolethidp_configurables %} 
