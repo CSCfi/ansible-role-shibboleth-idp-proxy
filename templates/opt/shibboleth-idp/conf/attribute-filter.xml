@@ -15,7 +15,7 @@
     </AttributeRule>
 {% endfor %}
 
-{% for attribute in shibbolethproxy_attributes['myLDAP'] | default([]) | selectattr('filter', 'undefined') %}
+{% for attribute in shibbolethproxy_attributes['myLDAP'] | default([]) | selectattr('filter', 'undefined') %}
     <AttributeRule attributeID="{{ attribute.id }}">
       <PermitValueRule xsi:type="ANY" />
     </AttributeRule>
@@ -31,4 +31,3 @@
 	</AttributeFilterPolicy> 
 {% endif %} 
 </AttributeFilterPolicyGroup>
-
