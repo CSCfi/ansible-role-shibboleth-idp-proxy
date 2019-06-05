@@ -94,7 +94,12 @@
     insertbefore: "</util:list>"
     block: |2
               <bean id="authn/{{ shibbolethproxy_item['location'] }}" parent="shibboleth.AuthenticationFlow"
-                    p:nonBrowserSupported="false" p:forcedAuthenticationSupported="true" />
+                    p:nonBrowserSupported="false" p:forcedAuthenticationSupported="true">
+                    <list>
+                      <bean parent="shibboleth.SAML2AuthnContextClassRef" c:classRef="https://{{ shibbolethidp_fqdn }}/{{ shibbolethproxy_item['location'] }}" />
+                      <bean parent="shibboleth.OIDCAuthnContextClassReference" c:classRef="https://{{ shibbolethidp_fqdn }}/{{ shibbolethproxy_item['location'] }}" />
+                    </list>
+              </bean>
   with_items: "{{ shibbolethproxy_flows }}"
   loop_control:
     loop_var: shibbolethproxy_item
