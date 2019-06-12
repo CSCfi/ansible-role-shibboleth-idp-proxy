@@ -1,25 +1,6 @@
 # test.yml
 ---
 - hosts: all
-  vars:
-    shibbolethproxy_attributes:
-      ScriptedAttribute:
-        - id: eduPersonPrincipalName
-        - id: mail
-        - id: displayName
-        - id: givenName
-        - id: cn
-        - id: sn
-        - id: schacHomeOrganization
-        - id: schacHomeOrganizationType
-      PrincipalName:
-        - id: uid
-      myLDAP:
-        - id: gecos
-          type: Simple
-          name: urn:oid:1.3.6.1.1.1.1.2 
-          oidcname: gecos
-          friendlyname: gecos
           
   roles:
     - role_under_test

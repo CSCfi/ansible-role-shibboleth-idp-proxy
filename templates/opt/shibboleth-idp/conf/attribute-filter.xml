@@ -9,25 +9,65 @@
   <AttributeFilterPolicy id="releaseToAnyone">
 
     <PolicyRequirementRule xsi:type="ANY"/>
-{% for attribute in shibbolethproxy_attributes['ScriptedAttribute'] | default([]) | selectattr('filter', 'undefined') %}
-    <AttributeRule attributeID="{{ attribute.id }}">
+    <AttributeRule attributeID="mail">
       <PermitValueRule xsi:type="ANY" />
     </AttributeRule>
-{% endfor %}
-
-{% for attribute in shibbolethproxy_attributes['myLDAP'] | default([]) | selectattr('filter', 'undefined') %}
-    <AttributeRule attributeID="{{ attribute.id }}">
+    <AttributeRule attributeID="uid">
       <PermitValueRule xsi:type="ANY" />
     </AttributeRule>
-{% endfor %}
+    <AttributeRule attributeID="displayName">
+      <PermitValueRule xsi:type="ANY" />
+    </AttributeRule>
+    <AttributeRule attributeID="givenName">
+      <PermitValueRule xsi:type="ANY" />
+    </AttributeRule>
+    <AttributeRule attributeID="cn">
+      <PermitValueRule xsi:type="ANY" />
+    </AttributeRule>
+    <AttributeRule attributeID="sn">
+      <PermitValueRule xsi:type="ANY" />
+    </AttributeRule>
+    <AttributeRule attributeID="schacHomeOrganization">
+      <PermitValueRule xsi:type="ANY" />
+    </AttributeRule>
+    <AttributeRule attributeID="schacHomeOrganizationType">
+      <PermitValueRule xsi:type="ANY" />
+    </AttributeRule>
+    <AttributeRule attributeID="eduPersonPrincipalName">
+      <PermitValueRule xsi:type="ANY" />
+    </AttributeRule>
+    <AttributeRule attributeID="virtuPersonPrincipalName">
+      <PermitValueRule xsi:type="ANY" />
+    </AttributeRule>
+    <AttributeRule attributeID="CSCUserName">
+      <PermitValueRule xsi:type="ANY" />
+    </AttributeRule>
 
   </AttributeFilterPolicy>
-{% if 'oidc' in shibbolethidp_configurables %} 
+ 
 	<AttributeFilterPolicy id="OPENID_SCOPE">
 		<PolicyRequirementRule xsi:type="oidcext:OIDCScope" value="openid" />
 		<AttributeRule attributeID="subject">
 			<PermitValueRule xsi:type="ANY" />
 		</AttributeRule>
-	</AttributeFilterPolicy> 
-{% endif %} 
+	</AttributeFilterPolicy>
+ 
+  <AttributeFilterPolicy id="OPENID_CSC_USER_SCOPE">
+    <PolicyRequirementRule xsi:type="oidcext:OIDCScope" value="csc_user" />
+    <AttributeRule attributeID="CSCUserName">
+      <PermitValueRule xsi:type="ANY" />
+    </AttributeRule>
+  </AttributeFilterPolicy>
+
+  <AttributeFilterPolicy id="OPENID_DEVICE">
+    <PolicyRequirementRule xsi:type="oidcext:OIDCScope" value="device" />
+    <AttributeRule attributeID="subject">
+      <PermitValueRule xsi:type="ANY" />
+    </AttributeRule>
+    <AttributeRule attributeID="eduPersonPrincipalName">
+      <PermitValueRule xsi:type="ANY" />
+    </AttributeRule>
+  </AttributeFilterPolicy>
+ 
 </AttributeFilterPolicyGroup>
+
