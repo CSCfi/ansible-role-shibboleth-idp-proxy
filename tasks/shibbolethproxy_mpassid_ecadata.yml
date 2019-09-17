@@ -1,6 +1,6 @@
 - name: MPASSid | ecadata | Download | Plugin v{{ shibbolethproxy_ecadata_version }}
   unarchive:
-    extra_opts: ['--strip-components=1', '--exclude=*shibsp*']
+    extra_opts: ['--strip-components=1', '--exclude=*shibsp*', '--exclude=*gson*']
     src: "{{ shibbolethproxy_ecadata_location }}/releases/download/{{ shibbolethproxy_ecadata_version }}/shibboleth-idp-attribute-ecadata-{{ shibbolethproxy_ecadata_version | regex_replace('[^0-9.]', '') }}.tar.gz"
     remote_src: yes
     dest: "{{ shibbolethidp_idp_home }}"
@@ -24,3 +24,19 @@
   with_items: "{{ files_to_delete.files }}"
   loop_control:
     loop_var: shibbolethproxy_item
+
+- name: MPASSid | ecadata | Detect | Duplicate | Plugins
+  find:
+    paths: "{{ shibbolethidp_idp_home }}/edit-webapp/WEB-INF/lib"
+    patterns: "^(?!.*({{ shibbolethproxy_ecadata_version | regex_replace('[^0-9.]', '') }})).*ecadata"
+    use_regex: true
+  register: files_to_delete
+
+- name: MPASSid | ecadata | Delete | Older | Plugins
+  file:
+    path: "{{ shibbolethproxy_item.path }}"
+    state: absent
+  with_items: "{{ files_to_delete.files }}"
+  loop_control:
+    loop_var: shibbolethproxy_item
+

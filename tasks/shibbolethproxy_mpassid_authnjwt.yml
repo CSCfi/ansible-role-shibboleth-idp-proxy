@@ -13,7 +13,7 @@
 - name: MPASSid | jwt | Detect | Duplicate | Plugins
   find:
     paths: "{{ shibbolethidp_idp_home }}/edit-webapp/WEB-INF/lib"
-    patterns: "^(?!.*({{ shibbolethproxy_authnjwt_version | regex_replace('[^0-9.]', '') }})).*jwt"
+    patterns: "^(?!.*({{ shibbolethproxy_authnjwt_version | regex_replace('[^0-9.]', '') }})).*impl-jwt"
     use_regex: true
   register: files_to_delete
 
