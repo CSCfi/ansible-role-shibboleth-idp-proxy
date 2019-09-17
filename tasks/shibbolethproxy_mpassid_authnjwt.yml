@@ -1,0 +1,43 @@
+- name: MPASSid | jwt | Download | Plugin v{{ shibbolethproxy_authnjwt_version }}
+  unarchive:
+    extra_opts: ['--strip-components=1']
+    src: "{{ shibbolethproxy_authnjwt_location }}/releases/download/{{ shibbolethproxy_authnjwt_version }}/shibboleth-idp-authn-jwt-{{ shibbolethproxy_authnjwt_version | regex_replace('[^0-9.]', '') }}.tar.gz"
+    remote_src: yes
+    dest: "{{ shibbolethidp_idp_home }}"
+    creates: "{{ shibbolethidp_idp_home }}/edit-webapp/WEB-INF/lib/idp-authn-api-jwt-{{ shibbolethproxy_authnjwt_version | regex_replace('[^0-9.]', '') }}.jar"
+    group: jetty
+    owner: root
+    mode: 0640
+  notify: rebuild shibboleth-idp
+
+- name: MPASSid | jwt | Detect | Duplicate | Plugins
+  find:
+    paths: "{{ shibbolethidp_idp_home }}/edit-webapp/WEB-INF/lib"
+    patterns: "^(?!.*({{ shibbolethproxy_authnjwt_version | regex_replace('[^0-9.]', '') }})).*jwt"
+    use_regex: true
+  register: files_to_delete
+
+- name: MPASSid | jwt | Delete | Older | Plugins
+  file:
+    path: "{{ shibbolethproxy_item.path }}"
+    state: absent
+  with_items: "{{ files_to_delete.files }}"
+  loop_control:
+    loop_var: shibbolethproxy_item
+
+- name: MPASSid | jwt | Flows | Configure | AuthenticationFlows | authn/general-authn.xml | jwt
+  blockinfile:
+    dest: "{{ shibbolethidp_idp_home }}/conf/authn/general-authn.xml"
+    marker: "      <!-- {mark} ansible managed - authnjwt autentication flow  -->"
+    insertbefore: "</util:list>"
+    block: |2
+              <bean id="authn/jwt" parent="shibboleth.AuthenticationFlow" p:nonBrowserSupported="false" p:forcedAuthenticationSupported="true"/>
+
+- name: MPASSid | jwt | Flows | Configure | Flows | idp.properties
+  lineinfile:
+    dest: "{{ shibbolethidp_idp_home }}/conf/idp.properties"
+    regexp: ^(?!.*jwt)(idp.authn.flows=.*)$
+    line: \1|jwt
+    backrefs: yes
+  notify:
+    - restart shibboleth-idp

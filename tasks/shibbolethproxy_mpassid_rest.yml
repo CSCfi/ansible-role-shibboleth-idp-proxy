@@ -1,0 +1,26 @@
+- name: MPASSid | rest | Download | Plugin v{{ shibbolethproxy_rest_version }}
+  unarchive:
+    extra_opts: ['--strip-components=1']
+    src: "{{ shibbolethproxy_rest_location }}/releases/download/{{ shibbolethproxy_rest_version }}/shibboleth-idp-rest-{{ shibbolethproxy_rest_version | regex_replace('[^0-9.]', '') }}.tar.gz"
+    remote_src: yes
+    dest: "{{ shibbolethidp_idp_home }}"
+    creates: "{{ shibbolethidp_idp_home }}/edit-webapp/WEB-INF/lib/idp-mpass-rest-api-{{ shibbolethproxy_rest_version | regex_replace('[^0-9.]', '') }}.jar"
+    group: jetty
+    owner: root
+    mode: 0640
+  notify: rebuild shibboleth-idp
+
+- name: MPASSid | rest | Detect | Duplicate | Plugins
+  find:
+    paths: "{{ shibbolethidp_idp_home }}/edit-webapp/WEB-INF/lib"
+    patterns: "^(?!.*({{ shibbolethproxy_rest_version | regex_replace('[^0-9.]', '') }})).*rest"
+    use_regex: true
+  register: files_to_delete
+
+- name: MPASSid | rest | Delete | Older | Plugins
+  file:
+    path: "{{ shibbolethproxy_item.path }}"
+    state: absent
+  with_items: "{{ files_to_delete.files }}"
+  loop_control:
+    loop_var: shibbolethproxy_item

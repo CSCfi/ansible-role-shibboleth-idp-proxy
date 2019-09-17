@@ -1,0 +1,43 @@
+- name: MPASSid | Wilma | Download | Plugin v{{ shibbolethproxy_authnwilma_version }}
+  unarchive:
+    extra_opts: ['--strip-components=1']
+    src: "{{ shibbolethproxy_authnwilma_location }}/releases/download/{{ shibbolethproxy_authnwilma_version }}/shibboleth-idp-authn-wilma-{{ shibbolethproxy_authnwilma_version | regex_replace('[^0-9.]', '') }}.tar.gz"
+    remote_src: yes
+    dest: "{{ shibbolethidp_idp_home }}"
+    creates: "{{ shibbolethidp_idp_home }}/edit-webapp/WEB-INF/lib/idp-authn-api-wilma-{{ shibbolethproxy_authnwilma_version | regex_replace('[^0-9.]', '') }}.jar"
+    group: jetty
+    owner: root
+    mode: 0640
+  notify: rebuild shibboleth-idp
+
+- name: MPASSid | Wilma | Detect | Duplicate | Plugins
+  find:
+    paths: "{{ shibbolethidp_idp_home }}/edit-webapp/WEB-INF/lib"
+    patterns: "^(?!.*({{ shibbolethproxy_authnwilma_version | regex_replace('[^0-9.]', '') }})).*wilma"
+    use_regex: true
+  register: files_to_delete
+
+- name: MPASSid | Wilma | Delete | Older | Plugins
+  file:
+    path: "{{ shibbolethproxy_item.path }}"
+    state: absent
+  with_items: "{{ files_to_delete.files }}"
+  loop_control:
+    loop_var: shibbolethproxy_item
+
+- name: MPASSid | Wilma | Flows | Configure | AuthenticationFlows | authn/general-authn.xml | Wilma
+  blockinfile:
+    dest: "{{ shibbolethidp_idp_home }}/conf/authn/general-authn.xml"
+    marker: "      <!-- {mark} ansible managed - authnWilma autentication flow  -->"
+    insertbefore: "</util:list>"
+    block: |2
+              <bean id="authn/Wilma" parent="shibboleth.AuthenticationFlow" p:nonBrowserSupported="false" p:forcedAuthenticationSupported="true"/>
+
+- name: MPASSid | Wilma | Flows | Configure | Flows | idp.properties
+  lineinfile:
+    dest: "{{ shibbolethidp_idp_home }}/conf/idp.properties"
+    regexp: ^(?!.*Wilma)(idp.authn.flows=.*)$
+    line: \1|Wilma
+    backrefs: yes
+  notify:
+    - restart shibboleth-idp

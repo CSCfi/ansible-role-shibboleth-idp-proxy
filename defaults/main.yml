@@ -7,6 +7,20 @@ shibbolethproxy_discoplugin_version: 0.9.5
 shibbolethproxy_discoplugin_location: 'https://github.com/mpassid/shibboleth-idp-authn-discovery'
 shibbolethproxy_wwwroot: /var/www/html
 
+### MPASSid
+shibbolethproxy_authnwilma_version: 0.9.5
+shibbolethproxy_authnwilma_location: 'https://github.com/mpassid/shibboleth-idp-authn-wilma'
+shibbolethproxy_authnjwt_version: 0.9.5
+shibbolethproxy_authnjwt_location: 'https://github.com/mpassid/shibboleth-idp-authn-jwt'
+shibbolethproxy_auditext_version: 0.9.5
+shibbolethproxy_auditext_location: 'https://github.com/mpassid/shibboleth-idp-audit-ext'
+shibbolethproxy_authnid_version: 0.9.5
+shibbolethproxy_authnid_location: 'https://github.com/mpassid/shibboleth-idp-attribute-authnid'
+shibbolethproxy_rest_version: 0.9.5
+shibbolethproxy_rest_location: 'https://github.com/mpassid/shibboleth-idp-rest'
+shibbolethproxy_ecadata_version: 0.9.5
+shibbolethproxy_ecadata_location: 'https://github.com/mpassid/shibboleth-idp-attribute-ecadata'
+
 shibbolethproxy_flows:
   - id: "Haka-test"
     ds: "https://testsp.funet.fi/shibboleth/WAYF"

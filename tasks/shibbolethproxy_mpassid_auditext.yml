@@ -1,0 +1,58 @@
+- name: MPASSid | auditExt | Download | Plugin v{{ shibbolethproxy_auditExt_version }}
+  unarchive:
+    extra_opts: ['--strip-components=1']
+    src: "{{ shibbolethproxy_auditext_location }}/releases/download/{{ shibbolethproxy_auditext_version }}/shibboleth-idp-audit-ext-{{ shibbolethproxy_auditext_version | regex_replace('[^0-9.]', '') }}.tar.gz"
+    remote_src: yes
+    dest: "{{ shibbolethidp_idp_home }}"
+    creates: "{{ shibbolethidp_idp_home }}/edit-webapp/WEB-INF/lib/idp-profile-impl-audit-{{ shibbolethproxy_auditext_version | regex_replace('[^0-9.]', '') }}.jar"
+    group: jetty
+    owner: root
+    mode: 0640
+  notify: rebuild shibboleth-idp
+
+- name: MPASSid | auditExt | Detect | Duplicate | Plugins
+  find:
+    paths: "{{ shibbolethidp_idp_home }}/edit-webapp/WEB-INF/lib"
+    patterns: "^(?!.*({{ shibbolethproxy_auditext_version | regex_replace('[^0-9.]', '') }})).*audit-ext"
+    use_regex: true
+  register: files_to_delete
+
+- name: MPASSid | auditExt | Delete | Older | Plugins
+  file:
+    path: "{{ shibbolethproxy_item.path }}"
+    state: absent
+  with_items: "{{ files_to_delete.files }}"
+  loop_control:
+    loop_var: shibbolethproxy_item
+
+- name: MPASSid | auditExt | Configure | {{ shibbolethidp_idp_home }}/conf/audit.xml 
+  blockinfile:
+    dest: "{{ shibbolethidp_idp_home }}/conf/audit.xml"
+    marker: "    <!-- {mark} ansible managed - auditext -->"
+    insertbefore: "</beans>"
+    block: |2
+            <bean id="shibboleth.PostAssertionAuditExtractors" parent="shibboleth.DefaultPostAssertionAuditExtractors" lazy-init="true">
+              <property name="sourceMap">
+                <map merge="true">
+                  <entry>
+                    <key>
+                      <bean class="java.lang.String">
+                        <constructor-arg value="attrIdValue"/>
+                      </bean>
+                    </key>
+                    <bean class="fi.mpass.shibboleth.profile.audit.impl.AttributeValueAuditExtractor">
+                      <constructor-arg value="attributeId"/>
+                    </bean>
+                  </entry>
+                  <entry>
+                  <key>
+                    <bean class="java.lang.String">
+                      <constructor-arg value="authnFlowValue"/>
+                    </bean>
+                  </key>
+                    <bean class="fi.mpass.shibboleth.profile.audit.impl.AuthnFlowIdAuditExtractor"/>
+                  </entry>
+                </map>
+              </property>
+           	</bean>
+
