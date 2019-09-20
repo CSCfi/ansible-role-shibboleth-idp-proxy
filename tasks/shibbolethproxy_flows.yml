@@ -51,7 +51,7 @@
     block: |2
                   <SessionInitiator type="Chaining" Location="/{{ shibbolethproxy_item['location'] }}" isDefault="false" id="{{ shibbolethproxy_item['id'] }}" relayState="cookie">
                     <SessionInitiator type="SAML2" defaultACSIndex="1" acsByIndex="false" template="bindingTemplate.html" />
-                    <SessionInitiator type="SAMLDS" URL="{{ shibbolethproxy_item['ds'] }}" />
+                    <SessionInitiator type="{% if shibbolethproxy_item.ds is defined %}SALMDS{%else %}SALM2{% endif %}" URL="{{ shibbolethproxy_item['ds'] | default(shibbolethproxy_item['entityid']) }}" />
                   </SessionInitiator>
   with_items: "{{ shibbolethproxy_flows }}"
   loop_control:
