@@ -49,9 +49,11 @@
     marker: "            <!-- {mark} ansible managed - {{ shibbolethproxy_item['location'] }} SessionInitiator  -->"
     insertbefore: "</Sessions>"
     block: |2
-                  <SessionInitiator type="Chaining" Location="/{{ shibbolethproxy_item['location'] }}" isDefault="false" id="{{ shibbolethproxy_item['id'] }}" relayState="cookie">
+                  <SessionInitiator type="Chaining" Location="/{{ shibbolethproxy_item['location'] }}" {% if shibbolethproxy_item.entityid is defined %}entityID="{{ shibbolethproxy_item['entityid']}}"{% endif %} Default="false" id="{{ shibbolethproxy_item['id'] }}" relayState="cookie">
                     <SessionInitiator type="SAML2" defaultACSIndex="1" acsByIndex="false" template="bindingTemplate.html" />
-                    <SessionInitiator type="{% if shibbolethproxy_item.ds is defined %}SAMLDS{%else %}SAML2{% endif %}" URL="{% if shibbolethproxy_item.ds is defined %}{{ shibbolethproxy_item['ds'] }}{% else %}{{ shibbolethproxy_item['entityid']}}{% endif %}" />
+                    {% if shibbolethproxy_item.ds is defined %}
+                    <SessionInitiator type="SAMLDS" URL="{{ shibbolethproxy_item['ds'] }}" />
+                    {% endif %}
                   </SessionInitiator>
   with_items: "{{ shibbolethproxy_flows }}"
   loop_control:
