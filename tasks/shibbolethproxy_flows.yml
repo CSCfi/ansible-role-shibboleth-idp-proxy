@@ -95,20 +95,21 @@
     marker: "      <!-- {mark} ansible managed - {{ shibbolethproxy_item['location'] }} autentication flow  -->"
     insertbefore: "</util:list>"
     block: |2
+              #jinja2: lstrip_blocks: "True", trim_blocks: "True"
               <bean id="authn/{{ shibbolethproxy_item['location'] }}" parent="shibboleth.AuthenticationFlow" p:nonBrowserSupported="false" p:forcedAuthenticationSupported="true">
-                    <property name="supportedPrincipals">
-                      <list>
-                        {% if shibbolethproxy_item['SAML2AuthnContextClassRefs'] is defined %}
-                        {% for SAML2AuthnContextClassRef in SAML2AuthnContextClassRefs %}
-                        <bean parent="shibboleth.SAML2AuthnContextClassRef" c:classRef="{{ SAML2AuthnContextClassRef }}" />
-                        <bean parent="shibboleth.OIDCAuthnContextClassReference" c:classRef="{{ SAML2AuthnContextClassRef }}" />
-                        {% endfor %}
-                        {% else %}
-                        <bean parent="shibboleth.SAML2AuthnContextClassRef" c:classRef="https://{{ shibbolethidp_fqdn }}/{{ shibbolethproxy_item['location'] }}" />
-                        <bean parent="shibboleth.OIDCAuthnContextClassReference" c:classRef="https://{{ shibbolethidp_fqdn }}/{{ shibbolethproxy_item['location'] }}" />
-                        {% endif %}
-                      </list>
-                    </property>
+                <property name="supportedPrincipals">
+                  <list>
+                    {% if shibbolethproxy_item['SAML2AuthnContextClassRefs'] is defined %}
+                    {% for SAML2AuthnContextClassRef in shibbolethproxy_item['SAML2AuthnContextClassRefs'] %}
+                    <bean parent="shibboleth.SAML2AuthnContextClassRef" c:classRef="{{ SAML2AuthnContextClassRef }}" />
+                    <bean parent="shibboleth.OIDCAuthnContextClassReference" c:classRef="{{ SAML2AuthnContextClassRef }}" />
+                    {% endfor %}
+                    {% else %}
+                    <bean parent="shibboleth.SAML2AuthnContextClassRef" c:classRef="https://{{ shibbolethidp_fqdn }}/{{ shibbolethproxy_item['location'] }}" />
+                    <bean parent="shibboleth.OIDCAuthnContextClassReference" c:classRef="https://{{ shibbolethidp_fqdn }}/{{ shibbolethproxy_item['location'] }}" />
+                    {% endif %}
+                  </list>
+                </property>
               </bean>
   with_items: "{{ shibbolethproxy_flows }}"
   loop_control:
