@@ -95,7 +95,6 @@
     marker: "      <!-- {mark} ansible managed - {{ shibbolethproxy_item['location'] }} autentication flow  -->"
     insertbefore: "</util:list>"
     block: |2
-              #jinja2: lstrip_blocks: "True", trim_blocks: "True"
               <bean id="authn/{{ shibbolethproxy_item['location'] }}" parent="shibboleth.AuthenticationFlow" p:nonBrowserSupported="false" p:forcedAuthenticationSupported="true">
                 <property name="supportedPrincipals">
                   <list>
@@ -117,29 +116,29 @@
   notify:
    - restart shibboleth-idp
 
-- name: Shibboleth IdP | Flows | Remove | Authn/Password | 
-  xml:
-    xpath: "//x:bean[@id='authn/Password']"
-    state: "absent"
-    file: "{{ shibbolethidp_idp_home }}/conf/authn/general-authn.xml"
-    namespaces:
-      x: http://www.springframework.org/schema/beans
-      p: http://www.springframework.org/schema/p
-
-- name: ShibSP | Flows | Configure | AuthenticationFlows | authn/general-authn.xml | loginCSC
-  blockinfile:
-    dest: "{{ shibbolethidp_idp_home }}/conf/authn/general-authn.xml"
-    marker: "      <!-- {mark} ansible managed - loginCSC autentication flow  -->"
-    insertbefore: "</util:list>"
-    block: |2
-              <bean id="authn/Password" parent="shibboleth.AuthenticationFlow" p:nonBrowserSupported="false" p:forcedAuthenticationSupported="true">
-                    <property name="supportedPrincipals">
-                      <list>
-                        <bean parent="shibboleth.SAML2AuthnContextClassRef" c:classRef="https://{{ shibbolethidp_fqdn }}/loginCSC" />
-                        <bean parent="shibboleth.OIDCAuthnContextClassReference" c:classRef="https://{{ shibbolethidp_fqdn }}/loginCSC" />
-                      </list>
-                    </property>
-              </bean>
+#- name: Shibboleth IdP | Flows | Remove | Authn/Password | 
+#  xml:
+#    xpath: "//x:bean[@id='authn/Password']"
+#    state: "absent"
+#    file: "{{ shibbolethidp_idp_home }}/conf/authn/general-authn.xml"
+#    namespaces:
+#      x: http://www.springframework.org/schema/beans
+#      p: http://www.springframework.org/schema/p
+#
+#- name: ShibSP | Flows | Configure | AuthenticationFlows | authn/general-authn.xml | loginCSC
+#  blockinfile:
+#    dest: "{{ shibbolethidp_idp_home }}/conf/authn/general-authn.xml"
+#    marker: "      <!-- {mark} ansible managed - loginCSC autentication flow  -->"
+#    insertbefore: "</util:list>"
+#    block: |2
+#              <bean id="authn/Password" parent="shibboleth.AuthenticationFlow" p:nonBrowserSupported="false" p:forcedAuthenticationSupported="true">
+#                    <property name="supportedPrincipals">
+#                      <list>
+#                        <bean parent="shibboleth.SAML2AuthnContextClassRef" c:classRef="https://{{ shibbolethidp_fqdn }}/loginCSC" />
+#                        <bean parent="shibboleth.OIDCAuthnContextClassReference" c:classRef="https://{{ shibbolethidp_fqdn }}/loginCSC" />
+#                      </list>
+#                    </property>
+#              </bean>
 
 - name: ShibSP | Flows | Configure | AuthenticationFlows | authn/shib-authn-config.xml
   blockinfile:
