@@ -37,7 +37,7 @@
       p: http://www.springframework.org/schema/p
   with_items:
     - { xpath: "//x:bean[@id='ValidateShibbolethAuthentication']", attribute: "p:populateHeaders", value: "true", ensure: present }
-    - { xpath: "//x:bean[@id='ValidateShibbolethAuthentication']", attribute: "p:usernameAttribute", value: "eppn,vppn,mpassUid", ensure: present }
+    - { xpath: "//x:bean[@id='ValidateShibbolethAuthentication']", attribute: "p:usernameAttribute", value: "eppn,vppn,mpassUid,EduuniId", ensure: present }
     - { xpath: "//x:bean[@id='ExtractShibbolethHeadersFromRequest']", attribute: "p:headerEncoding", value: "ISO-8859-1", ensure: present }
   loop_control:
     loop_var: shibbolethproxy_item
