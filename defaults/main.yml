@@ -26,6 +26,11 @@ shibbolethproxy_flows:
     ds: "https://testsp.funet.fi/shibboleth/WAYF"
     location: "LoginHakaTest"
 
+shibbolethproxy_authmethods:
+  - parent: RelayingPartyByName
+    ids: ftn_test-rp
+    flows: "#{{''Disco','LoginVirtuTest','LoginHakaTest''}}"
+
 #shibbolethproxy_attributes:
 #   ScriptedAttribute:
 #    - id: eduPersonPrincipalName

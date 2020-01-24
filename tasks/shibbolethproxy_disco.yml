@@ -45,3 +45,22 @@
     regexp: ^(?!.*Disco)(idp.authn.flows=.*)$
     line: \1|Disco
     backrefs: yes
+
+- name: Disco | Configure | AuthenticationMethods | relying-party.xml
+  blockinfile:
+    dest: "{{ shibbolethidp_idp_home }}/conf/relying-party.xml"
+    marker: "      <!-- {mark} ansible managed - Disco authenticationMethods {{ shibbolethproxy_item.ids }} -->"
+    insertafter: "shibboleth.RelyingPartyOverrides"
+    block: |2
+          <bean parent="{{ shibbolethproxy_item.parent }}" p:responderIdLookupStrategy-ref="profileResponderIdLookupFunction" c:relyingPartyIds="{{ shibbolethproxy_item.ids }}">
+            <property name="profileConfigurations">
+              <list>
+                <bean parent="SAML2.SSO" p:authenticationFlows="{{ shibbolethproxy_item.flows }}" />   
+                <bean parent="OIDC.SSO" p:authenticationFlows="{{ shibbolethproxy_item.flows }}" />
+              </list>
+            </property>
+          </bean>
+  with_items: "{{ shibbolethproxy_authmethods }}"
+  loop_control:
+    loop_var: shibbolethproxy_item
+
