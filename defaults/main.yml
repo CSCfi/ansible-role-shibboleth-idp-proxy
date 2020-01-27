@@ -29,8 +29,8 @@ shibbolethproxy_flows:
 shibbolethproxy_authmethods:
   - parent: RelayingPartyByName
     ids: ftn_test-rp
-    flows: "#{{''Disco','LoginVirtuTest','LoginHakaTest''}}"
-
+    flows: !unsafe "#{{''Disco','LoginVirtuTest','LoginHakaTest''}}"
+    
 #shibbolethproxy_attributes:
 #   ScriptedAttribute:
 #    - id: eduPersonPrincipalName
