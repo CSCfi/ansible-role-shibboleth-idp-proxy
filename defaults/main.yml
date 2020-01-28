@@ -29,7 +29,7 @@ shibbolethproxy_flows:
 shibbolethproxy_authmethods:
   - parent: RelyingPartyByName
     ids: ftn_test-rp
-    flows: !unsafe "#{{''Disco','LoginVirtuTest','LoginHakaTest''}}"
+    flows: !unsafe "#{{'Disco','LoginVirtuTest','LoginHakaTest'}}"
     
 #shibbolethproxy_attributes:
 #   ScriptedAttribute:
