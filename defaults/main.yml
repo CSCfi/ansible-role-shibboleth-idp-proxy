@@ -27,7 +27,7 @@ shibbolethproxy_flows:
     location: "LoginHakaTest"
 
 shibbolethproxy_authmethods:
-  - parent: RelayingPartyByName
+  - parent: RelyingPartyByName
     ids: ftn_test-rp
     flows: !unsafe "#{{''Disco','LoginVirtuTest','LoginHakaTest''}}"
     
