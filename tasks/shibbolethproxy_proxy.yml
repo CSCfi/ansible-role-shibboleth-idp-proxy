@@ -84,6 +84,9 @@
                 <AttributeResolver type="Template" sources="virtuLocalID virtuHomeOrganization" dest="vppn">
                   <Template>$virtuLocalID@$virtuHomeOrganization</Template>
                 </AttributeResolver>
+                <AttributeResolver type="Template" sources="EduuniId" dest="EduuniIdScoped">
+                  <Template>$EduuniId@eduuni.fi</Template>
+                </AttributeResolver>
               </AttributeResolver>
 
 - name: Shibboleth IdP | OIDC | Configure | global.xml | Serializers
