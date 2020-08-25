@@ -39,6 +39,8 @@
     - { xpath: "//x:bean[@id='ValidateShibbolethAuthentication']", attribute: "p:populateHeaders", value: "true", ensure: present }
     - { xpath: "//x:bean[@id='ValidateShibbolethAuthentication']", attribute: "p:usernameAttribute", value: "eppn,vppn,mpassUid,EduuniId,nationalIdentificationNumber,eduPersonUniqueId", ensure: present }
     - { xpath: "//x:bean[@id='ExtractShibbolethHeadersFromRequest']", attribute: "p:headerEncoding", value: "ISO-8859-1", ensure: present }
+    - { xpath: "//x:bean[@id='ExtractShibbolethPrincipals']", attribute: "p:headerEncoding", value: "ISO-8859-1", ensure: present }
+
   loop_control:
     loop_var: shibbolethproxy_item
   notify: restart shibboleth-idp
