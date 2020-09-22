@@ -18,7 +18,7 @@ shibbolethproxy_authnid_version: 0.9.5
 shibbolethproxy_authnid_location: 'https://github.com/mpassid/shibboleth-idp-attribute-authnid'
 shibbolethproxy_rest_version: 0.9.5
 shibbolethproxy_rest_location: 'https://github.com/mpassid/shibboleth-idp-rest'
-shibbolethproxy_ecadata_version: 1.0.0
+shibbolethproxy_ecadata_version: 1.0.1
 shibbolethproxy_ecadata_location: 'https://github.com/mpassid/shibboleth-idp-attribute-ecadata'
 
 shibbolethproxy_flows:
