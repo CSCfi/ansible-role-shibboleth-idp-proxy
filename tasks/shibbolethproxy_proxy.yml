@@ -130,6 +130,13 @@
     loop_var: shibbolethidp_item
   notify: restart shibboleth-idp
 
+- name: Main | Jetty | Configure | settings 
+  lineinfile: dest={{ item.dst }} regexp="^#?\s*({{ item.name }}\s*=)" backrefs=yes  line="\\1 {{ item.value }}"
+  with_items: 
+    - name: jetty.httpConfig.requestHeaderSize
+      dst: "{{ shibbolethidp_jetty_base }}/start.d/server.ini"
+      value: 32768
+
 #- name: IdP.Service | {{ idp }} | IdP | Localization | Enable
 #  blockinfile:
 #    dest: "{{ shibbolethidp_idp_home }}/conf/mvc-beans.xml"
