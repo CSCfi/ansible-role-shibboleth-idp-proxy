@@ -56,7 +56,7 @@
             <property name="profileConfigurations">
               <list>
                 <bean parent="SAML2.SSO" p:authenticationFlows="{{ shibbolethproxy_item.flows }}" />   
-                <bean parent="OIDC.SSO" p:authenticationFlows="{{ shibbolethproxy_item.flows }}" />
+                <bean parent="OIDC.SSO" p:acrRequestAlwaysEssential="true" p:authenticationFlows="{{ shibbolethproxy_item.flows }}" />
                 <bean parent="OIDC.UserInfo"/>
               </list>
             </property>
