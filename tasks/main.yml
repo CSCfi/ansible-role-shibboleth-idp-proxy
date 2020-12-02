@@ -34,7 +34,7 @@
 
 - name: Main | shibidpproxy_confs
   include: tags/{{ item }}.yml
-  with_items: "{{ shibidpproxy_confss }}"
+  with_items: "{{ shibidpproxy_confs }}"
   when: shibidpproxy_confs is defined and shibidpproxy_confs!="" and shibidpproxy_confs !="proxy"
 
 - debug: msg="trigger handlers"
