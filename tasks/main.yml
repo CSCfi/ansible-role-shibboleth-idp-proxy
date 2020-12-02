@@ -30,7 +30,7 @@
   when: item.state == 'file'
 
 - name: Main | Configurables | Mandatory | Proxy
-  include: shibbolethproxy_proxy.yml
+  include: tags/proxy.yml
 
 - name: Main | shibidpproxy_confs
   include: tags/{{ item }}.yml
