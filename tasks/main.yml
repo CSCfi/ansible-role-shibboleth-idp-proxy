@@ -32,10 +32,10 @@
 - name: Main | Configurables | Mandatory | Proxy
   include: shibbolethproxy_proxy.yml
 
-- name: Main | Configurables
-  include: shibbolethproxy_{{ item }}.yml
+- name: Main | shibidpproxy_confs
+  include: tags/{{ item }}.yml
   with_items: "{{ configurables }}"
-  when: configurables is defined and configurables!="" and configurables !="proxy"
+  when: shibidpproxy_confs is defined and shibidpproxy_confs!="" and shibidpproxy_confs !="proxy"
 
 - debug: msg="trigger handlers"
   notify: 
