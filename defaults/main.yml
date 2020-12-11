@@ -1,5 +1,5 @@
 ### ShibSP Shibboleth SP authentication
-shibbolethproxy_shibspplugin_version: 1.0.0-rc1
+shibbolethproxy_shibspplugin_version: 1.0.0-rc3
 shibbolethproxy_shibspplugin_location: 'https://github.com/CSCfi/shibboleth-idp-authn-shibsp'
 
 ### DISCO shibboleth-idp-authn-discovery
