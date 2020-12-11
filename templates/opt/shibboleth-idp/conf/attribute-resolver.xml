@@ -40,7 +40,7 @@
         authnContext = resolutionContext.getParent().getSubcontext("net.shibboleth.idp.authn.context.AuthenticationContext");
         if (authnContext !== null) {
           subject = authnContext.getAuthenticationResult().getSubject();
-          principals = subject.getPrincipals(Java.type("fi.mpass.shibboleth.authn.principal.impl.ShibHeaderPrincipal").class);
+          principals = subject.getPrincipals(Java.type("fi.csc.shibboleth.authn.principal.impl.ShibHeaderPrincipal").class);
           iterator = principals.iterator();
           while (iterator.hasNext()) {
             principal = iterator.next();
@@ -59,7 +59,7 @@
         authnContext = resolutionContext.getParent().getSubcontext("net.shibboleth.idp.authn.context.AuthenticationContext");
         if (authnContext !== null) {
           subject = authnContext.getAuthenticationResult().getSubject();
-          principals = subject.getPrincipals(Java.type("fi.mpass.shibboleth.authn.principal.impl.ShibHeaderPrincipal").class);
+          principals = subject.getPrincipals(Java.type("fi.csc.shibboleth.authn.principal.impl.ShibHeaderPrincipal").class);
           iterator = principals.iterator();
           while (iterator.hasNext()) {
             principal = iterator.next();
@@ -78,7 +78,7 @@
         authnContext = resolutionContext.getParent().getSubcontext("net.shibboleth.idp.authn.context.AuthenticationContext");
         if (authnContext !== null) {
           subject = authnContext.getAuthenticationResult().getSubject();
-          principals = subject.getPrincipals(Java.type("fi.mpass.shibboleth.authn.principal.impl.ShibHeaderPrincipal").class);
+          principals = subject.getPrincipals(Java.type("fi.csc.shibboleth.authn.principal.impl.ShibHeaderPrincipal").class);
           iterator = principals.iterator();
           while (iterator.hasNext()) {
             principal = iterator.next();
@@ -102,7 +102,7 @@
         authnContext = resolutionContext.getParent().getSubcontext("net.shibboleth.idp.authn.context.AuthenticationContext");
         if (authnContext !== null) {
           subject = authnContext.getAuthenticationResult().getSubject();
-          principals = subject.getPrincipals(Java.type("fi.mpass.shibboleth.authn.principal.impl.ShibHeaderPrincipal").class);
+          principals = subject.getPrincipals(Java.type("fi.csc.shibboleth.authn.principal.impl.ShibHeaderPrincipal").class);
           iterator = principals.iterator();
           while (iterator.hasNext()) {
             principal = iterator.next();
@@ -121,7 +121,7 @@
         authnContext = resolutionContext.getParent().getSubcontext("net.shibboleth.idp.authn.context.AuthenticationContext");
         if (authnContext !== null) {
           subject = authnContext.getAuthenticationResult().getSubject();
-          principals = subject.getPrincipals(Java.type("fi.mpass.shibboleth.authn.principal.impl.ShibHeaderPrincipal").class);
+          principals = subject.getPrincipals(Java.type("fi.csc.shibboleth.authn.principal.impl.ShibHeaderPrincipal").class);
           iterator = principals.iterator();
           while (iterator.hasNext()) {
             principal = iterator.next();
@@ -140,7 +140,7 @@
         authnContext = resolutionContext.getParent().getSubcontext("net.shibboleth.idp.authn.context.AuthenticationContext");
         if (authnContext !== null) {
           subject = authnContext.getAuthenticationResult().getSubject();
-          principals = subject.getPrincipals(Java.type("fi.mpass.shibboleth.authn.principal.impl.ShibHeaderPrincipal").class);
+          principals = subject.getPrincipals(Java.type("fi.csc.shibboleth.authn.principal.impl.ShibHeaderPrincipal").class);
           iterator = principals.iterator();
           while (iterator.hasNext()) {
             principal = iterator.next();
@@ -159,7 +159,7 @@
         authnContext = resolutionContext.getParent().getSubcontext("net.shibboleth.idp.authn.context.AuthenticationContext");
         if (authnContext !== null) {
           subject = authnContext.getAuthenticationResult().getSubject();
-          principals = subject.getPrincipals(Java.type("fi.mpass.shibboleth.authn.principal.impl.ShibHeaderPrincipal").class);
+          principals = subject.getPrincipals(Java.type("fi.csc.shibboleth.authn.principal.impl.ShibHeaderPrincipal").class);
           iterator = principals.iterator();
           while (iterator.hasNext()) {
             principal = iterator.next();
@@ -179,7 +179,7 @@
         authnContext = resolutionContext.getParent().getSubcontext("net.shibboleth.idp.authn.context.AuthenticationContext");
         if (authnContext !== null) {
           subject = authnContext.getAuthenticationResult().getSubject();
-          principals = subject.getPrincipals(Java.type("fi.mpass.shibboleth.authn.principal.impl.ShibHeaderPrincipal").class);
+          principals = subject.getPrincipals(Java.type("fi.csc.shibboleth.authn.principal.impl.ShibHeaderPrincipal").class);
           iterator = principals.iterator();
           while (iterator.hasNext()) {
             principal = iterator.next();
@@ -198,7 +198,7 @@
         authnContext = resolutionContext.getParent().getSubcontext("net.shibboleth.idp.authn.context.AuthenticationContext");
         if (authnContext !== null) {
           subject = authnContext.getAuthenticationResult().getSubject();
-          principals = subject.getPrincipals(Java.type("fi.mpass.shibboleth.authn.principal.impl.ShibHeaderPrincipal").class);
+          principals = subject.getPrincipals(Java.type("fi.csc.shibboleth.authn.principal.impl.ShibHeaderPrincipal").class);
           iterator = principals.iterator();
           while (iterator.hasNext()) {
             principal = iterator.next();
@@ -218,7 +218,7 @@
         authnContext = resolutionContext.getParent().getSubcontext("net.shibboleth.idp.authn.context.AuthenticationContext");
         if (authnContext !== null) {
           subject = authnContext.getAuthenticationResult().getSubject();
-          principals = subject.getPrincipals(Java.type("fi.mpass.shibboleth.authn.principal.impl.ShibHeaderPrincipal").class);
+          principals = subject.getPrincipals(Java.type("fi.csc.shibboleth.authn.principal.impl.ShibHeaderPrincipal").class);
           iterator = principals.iterator();
           while (iterator.hasNext()) {
             principal = iterator.next();
@@ -238,7 +238,7 @@
         authnContext = resolutionContext.getParent().getSubcontext("net.shibboleth.idp.authn.context.AuthenticationContext");
         if (authnContext !== null) {
           subject = authnContext.getAuthenticationResult().getSubject();
-          principals = subject.getPrincipals(Java.type("fi.mpass.shibboleth.authn.principal.impl.ShibHeaderPrincipal").class);
+          principals = subject.getPrincipals(Java.type("fi.csc.shibboleth.authn.principal.impl.ShibHeaderPrincipal").class);
           iterator = principals.iterator();
           while (iterator.hasNext()) {
             principal = iterator.next();
@@ -258,7 +258,7 @@
         authnContext = resolutionContext.getParent().getSubcontext("net.shibboleth.idp.authn.context.AuthenticationContext");
         if (authnContext !== null) {
           subject = authnContext.getAuthenticationResult().getSubject();
-          principals = subject.getPrincipals(Java.type("fi.mpass.shibboleth.authn.principal.impl.ShibHeaderPrincipal").class);
+          principals = subject.getPrincipals(Java.type("fi.csc.shibboleth.authn.principal.impl.ShibHeaderPrincipal").class);
           iterator = principals.iterator();
           while (iterator.hasNext()) {
             principal = iterator.next();

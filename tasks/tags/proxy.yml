@@ -98,8 +98,8 @@
           <bean id="shibboleth.PrincipalSerializers" class="org.springframework.beans.factory.config.ListFactoryBean">
             <property name="sourceList">
               <list>
-                <bean class="fi.mpass.shibboleth.authn.principal.impl.ShibAttributePrincipalSerializer" />
-                <bean class="fi.mpass.shibboleth.authn.principal.impl.ShibHeaderPrincipalSerializer" />
+                <bean class="fi.csc.shibboleth.authn.principal.impl.ShibAttributePrincipalSerializer" />
+                <bean class="fi.csc.shibboleth.authn.principal.impl.ShibHeaderPrincipalSerializer" />
                 <bean class="net.shibboleth.idp.authn.principal.impl.UsernamePrincipalSerializer" />
                 <bean class="net.shibboleth.idp.authn.principal.impl.LDAPPrincipalSerializer" />
                 <bean class="net.shibboleth.idp.authn.duo.impl.DuoPrincipalSerializer" />

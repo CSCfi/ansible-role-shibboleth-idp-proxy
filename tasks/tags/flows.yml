@@ -1,10 +1,10 @@
 - name: ShibSP | Shibboleth IdP | Download | Plugin v{{ shibbolethproxy_shibspplugin_version }}
   unarchive:
     extra_opts: ['--strip-components=1']
-    src: "{{ shibbolethproxy_shibspplugin_location }}/releases/download/{{ shibbolethproxy_shibspplugin_version }}/shibboleth-idp-authn-shibsp-{{ shibbolethproxy_shibspplugin_version | regex_replace('[^0-9.]', '') }}.tar.gz"
+    src: "{{ shibbolethproxy_shibspplugin_location }}/releases/download/{{ shibbolethproxy_shibspplugin_version }}/shibboleth-idp-authn-shibsp-{{ shibbolethproxy_shibspplugin_version | regex_replace('[^0-9rc.-]', '') }}.tar.gz"
     remote_src: yes
     dest: "{{ shibbolethidp_idp_home }}"
-    creates: "{{ shibbolethidp_idp_home }}/edit-webapp/WEB-INF/lib/idp-authn-api-shibsp-{{ shibbolethproxy_shibspplugin_version | regex_replace('[^0-9.]', '') }}.jar"
+    creates: "{{ shibbolethidp_idp_home }}/edit-webapp/WEB-INF/lib/idp-authn-api-shibsp-{{ shibbolethproxy_shibspplugin_version | regex_replace('[^0-9rc.-]', '') }}.jar"
     group: jetty
     owner: root
     mode: 0640
@@ -13,7 +13,7 @@
 - name: ShibSP | Detect | Duplicate | Plugins
   find:
     paths: "{{ shibbolethidp_idp_home }}/edit-webapp/WEB-INF/lib"
-    patterns: "^(?!.*({{ shibbolethproxy_shibspplugin_version | regex_replace('[^0-9.]', '') }})).*shibsp"
+    patterns: "^(?!.*({{ shibbolethproxy_shibspplugin_version | regex_replace('[^0-9rc.-]', '') }})).*shibsp"
     use_regex: true
   register: files_to_delete
 

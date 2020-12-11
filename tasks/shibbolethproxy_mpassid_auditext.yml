@@ -40,7 +40,7 @@
                         <constructor-arg value="attrIdValue"/>
                       </bean>
                     </key>
-                    <bean class="fi.mpass.shibboleth.profile.audit.impl.AttributeValueAuditExtractor">
+                    <bean class="fi.csc.shibboleth.profile.audit.impl.AttributeValueAuditExtractor">
                       <constructor-arg value="attributeId"/>
                     </bean>
                   </entry>
@@ -50,7 +50,7 @@
                       <constructor-arg value="authnFlowValue"/>
                     </bean>
                   </key>
-                    <bean class="fi.mpass.shibboleth.profile.audit.impl.AuthnFlowIdAuditExtractor"/>
+                    <bean class="fi.csc.shibboleth.profile.audit.impl.AuthnFlowIdAuditExtractor"/>
                   </entry>
                 </map>
               </property>
