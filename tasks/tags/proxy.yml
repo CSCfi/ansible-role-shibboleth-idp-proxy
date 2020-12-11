@@ -89,25 +89,55 @@
                 </AttributeResolver>
               </AttributeResolver>
 
-- name: Shibboleth IdP | OIDC | Configure | global.xml | Serializers
-  blockinfile:
-    dest: "{{ shibbolethidp_idp_home }}/conf/global.xml"
-    marker: "    <!-- {mark} ansible managed - OIDC Serializers  -->"
-    insertbefore: "</beans>"
-    content: |2
-          <bean id="shibboleth.PrincipalSerializers" class="org.springframework.beans.factory.config.ListFactoryBean">
-            <property name="sourceList">
-              <list>
-                <bean class="fi.csc.shibboleth.authn.principal.impl.ShibAttributePrincipalSerializer" />
-                <bean class="fi.csc.shibboleth.authn.principal.impl.ShibHeaderPrincipalSerializer" />
-                <bean class="net.shibboleth.idp.authn.principal.impl.UsernamePrincipalSerializer" />
-                <bean class="net.shibboleth.idp.authn.principal.impl.LDAPPrincipalSerializer" />
-                <bean class="net.shibboleth.idp.authn.duo.impl.DuoPrincipalSerializer" />
-                <bean class="net.shibboleth.idp.authn.principal.impl.IdPAttributePrincipalSerializer" />
-                <bean class="net.shibboleth.idp.authn.principal.impl.PasswordPrincipalSerializer" p:dataSealer="#{'%{idp.sealer.storeResource:}'.trim().length() > 0 ? getObject('shibboleth.DataSealer') : null}" />
-              </list>
-            </property>
-          </bean>
+
+- name: Configure | Proxy | Del | Serializers < conf/global.xml
+  xml:
+    file: "{{ shibbolethidp_idp_home }}/conf/global.xml"
+    xpath: "{{ nameiditem }}"
+    namespaces:
+      x: "http://www.springframework.org/schema/beans"
+    state: absent
+  loop_control:
+    loop_var: nameiditem
+  with_items:
+    - '/x:beans/x:bean[@id="shibboleth.PrincipalSerializers"]'
+
+- name: Configure | Proxy | Add | Serializers > conf/global.xml
+  xml:
+    file: "{{ shibbolethidp_idp_home }}/conf/global.xml"
+    xpath: /x:beans
+    pretty_print: yes
+    #    insertbefore: yes
+    namespaces: &namespaces
+      x: "http://www.springframework.org/schema/beans"
+      p: "http://www.springframework.org/schema/p"
+      c: "http://www.springframework.org/schema/c"
+    add_children:
+      - bean:
+          id: shibboleth.PrincipalSerializers"
+          class: org.springframework.beans.factory.config.ListFactoryBean
+          _:
+            - property:
+                name: sourceList
+                _: 
+                   - list:
+                       _:
+                          - bean:
+                              class: "fi.csc.shibboleth.authn.principal.impl.ShibAttributePrincipalSerializer"
+                          - bean: 
+                              class: "fi.csc.shibboleth.authn.principal.impl.ShibHeaderPrincipalSerializer"
+                          - bean:
+                              class: "net.shibboleth.idp.authn.principal.impl.UsernamePrincipalSerializer"
+                          - bean:
+                              class: "net.shibboleth.idp.authn.principal.impl.LDAPPrincipalSerializer"
+                          - bean:
+                              class: "net.shibboleth.idp.authn.duo.impl.DuoPrincipalSerializer"
+                          - bean:
+                              class: "net.shibboleth.idp.authn.principal.impl.IdPAttributePrincipalSerializer"
+                          - bean:
+                             class: "net.shibboleth.idp.authn.principal.impl.PasswordPrincipalSerializer"
+                             "{http://www.springframework.org/schema/p}dataSealer: "#{'%{idp.sealer.storeResource:}'.trim().length() > 0 ? getObject('shibboleth.DataSealer') : null}"
+
 
 # - name: Shibboleth-IdP related configration
 # ===========================================
