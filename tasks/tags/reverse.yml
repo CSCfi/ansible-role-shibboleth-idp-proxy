@@ -1,0 +1,16 @@
+- name: initial packages
+  yum:
+    name:
+      - jansson-devel
+      - openssl-devel
+    state: present
+    notify: apache-restart  
+
+- name: Install mod_auth_openidc and assets
+  yum:  "{{ item }}"
+  with_items: 
+    - https://github.com/zmartzone/mod_auth_openidc/releases/download/v2.4.0/cjose-0.6.1.5-1.el7.x86_64.rpm
+    - https://github.com/zmartzone/mod_auth_openidc/releases/download/v2.4.5/mod_auth_openidc-2.4.5-1.el8.x86_64.rpm
+  notify: apache-restart
+
+

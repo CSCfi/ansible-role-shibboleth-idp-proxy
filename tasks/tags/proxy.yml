@@ -99,7 +99,7 @@
   loop_control:
     loop_var: nameiditem
   with_items:
-    - '/x:beans/x:bean[@id="shibboleth.PrincipalSerializers"]'
+    - '//x:bean[@id="shibboleth.PrincipalSerializers"]'
 
 - name: Configure | Proxy | Add | Serializers > conf/global.xml
   xml:
@@ -113,7 +113,7 @@
       c: "http://www.springframework.org/schema/c"
     add_children:
       - bean:
-          id: shibboleth.PrincipalSerializers"
+          id: shibboleth.PrincipalSerializers
           class: org.springframework.beans.factory.config.ListFactoryBean
           _:
             - property:

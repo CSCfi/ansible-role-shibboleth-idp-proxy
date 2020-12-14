@@ -46,22 +46,50 @@
     line: \1|Disco
     backrefs: yes
 
-- name: Disco | Configure | AuthenticationMethods | relying-party.xml
-  blockinfile:
-    dest: "{{ shibbolethidp_idp_home }}/conf/relying-party.xml"
-    marker: "      <!-- {mark} ansible managed - Disco authenticationMethods {{ shibbolethproxy_item.ids }} -->"
-    insertafter: "shibboleth.RelyingPartyOverrides"
-    block: |2
-          <bean parent="{{ shibbolethproxy_item.parent }}" p:responderIdLookupStrategy-ref="profileResponderIdLookupFunction" c:relyingPartyIds="{{ shibbolethproxy_item.ids }}">
-            <property name="profileConfigurations">
-              <list>
-                <bean parent="SAML2.SSO" p:authenticationFlows="{{ shibbolethproxy_item.flows }}" />   
-                <bean parent="OIDC.SSO" p:acrRequestAlwaysEssential="true" p:authenticationFlows="{{ shibbolethproxy_item.flows }}" />
-                <bean parent="OIDC.UserInfo"/>
-              </list>
-            </property>
-          </bean>
-  with_items: "{{ shibbolethproxy_authmethods }}"
+- name: Configure | Proxy | Del | AuthenticationMethods < conf/relying-party.xml
+  xml:
+    file: "{{ shibbolethidp_idp_home }}/conf/relying-party.xml"
+    xpath: //x:bean[@c:relyingPartyIds="{{ shibbolethproxy_item.ids }}"]
+    namespaces:
+      x: "http://www.springframework.org/schema/beans"
+      c: "http://www.springframework.org/schema/c"
+    state: absent
   loop_control:
     loop_var: shibbolethproxy_item
+  with_items: "{{ shibbolethproxy_authmethods }}"
+
+- name: Configure | Proxy | Add | AuthenticationMethods > conf/relying-party.xml
+  xml:
+    file: "{{ shibbolethidp_idp_home }}/conf/relying-party.xml"
+    xpath: //util:list[@id='shibboleth.RelyingPartyOverrides']
+    pretty_print: yes
+    #    insertbefore: yes
+    namespaces: &namespaces
+      x: "http://www.springframework.org/schema/beans"
+      p: "http://www.springframework.org/schema/p"
+      c: "http://www.springframework.org/schema/c"
+      util: "http://www.springframework.org/schema/util" 
+    add_children:
+      - bean:
+          parent: "{{ shibbolethproxy_item.parent }}"
+          "{http://www.springframework.org/schema/p}responderIdLookupStrategy-ref": "profileResponderIdLookupFunction"
+          "{http://www.springframework.org/schema/c}relyingPartyIds": "{{ shibbolethproxy_item.ids }}"
+          _:
+            - property:
+                name: profileConfigurations
+                _:
+                   - list:
+                       _:
+                          - bean:
+                              parent: "SAML2.SSO"
+                              "{http://www.springframework.org/schema/p}authenticationFlows": "{{ shibbolethproxy_item.flows }}"
+                          - bean:
+                              parent: "OIDC.SSO"
+                              "{http://www.springframework.org/schema/p}acrRequestAlwaysEssential": "true"
+                              "{http://www.springframework.org/schema/p}authenticationFlows": "{{ shibbolethproxy_item.flows }}"
+                          - bean:
+                              parent: "OIDC.UserInfo"
+  loop_control:
+    loop_var: shibbolethproxy_item
+  with_items: "{{ shibbolethproxy_authmethods }}"
 
