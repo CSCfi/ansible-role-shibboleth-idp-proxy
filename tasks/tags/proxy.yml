@@ -52,41 +52,78 @@
 # - name: Shibboleth SP related configurations
 # ============================================
 
-- name: Remove the subjective attribute of the rating element
+- name: Proxy | ShibSP | Remove | plugins.so 
   xml:
     path: /etc/shibboleth/shibboleth2.xml
-    xpath: /x:SPConfig/x:OutOfProcess
+    xpath: /x:SPConfig/x:OutOfProcess/x:Extensions
     state: absent
     namespaces:
       x: urn:mace:shibboleth:3.0:native:sp:config
 
-- name: Proxy | Shibboleth-sp | Configure | add plugins.so
-  blockinfile:
-    dest: "/etc/shibboleth/shibboleth2.xml"
-    marker: "    <!-- {mark} ansible managed - OutofProcess blocks -->"
-    insertafter: '<SPConfig xmlns='
-    content: |2
-          <OutOfProcess tranLogFormat="%u|%s|%IDP|%i|%ac|%t|%attr|%n|%b|%E|%S|%SS|%L|%UA|%a">
-            <Extensions>
-              <Library path="plugins.so" fatal="false"/>
-            </Extensions>
-          </OutOfProcess>
+- name: Proxy | ShibSP | Add | plugins.so 
+  xml:
+    file: "/etc/shibboleth/shibboleth2.xml"
+    xpath: '/x:SPConfig/x:OutOfProcess'
+    pretty_print: yes
+    namespaces: &namespaces
+      x: urn:mace:shibboleth:3.0:native:sp:config
+    add_children:
+      - Extensions:
+          _:
+            - Library:
+                path: "plugins.so"
+                fatal: "false"
+
+- name: Proxy | ShibSP | Remove | AttributeResolver
+  xml:
+    path: /etc/shibboleth/shibboleth2.xml
+    xpath: "/x:SPConfig/x:ApplicationDefaults/x:AttributeResolver[@type='Chaining']"
+    state: absent
+    namespaces:
+      x: urn:mace:shibboleth:3.0:native:sp:config
 
 - name: Proxy | Shibboleth-sp | Configure | AttributeResolver 
-  blockinfile:
-    dest: "/etc/shibboleth/shibboleth2.xml"
-    marker: "        <!-- {mark} ansible managed - AttributeResolver block -->"
-    insertafter: '<AttributeExtractor type='
-    content: |2
-              <AttributeResolver type="Chaining">
-                <AttributeResolver type="Query" subjectMatch="true"/>
-                <AttributeResolver type="Template" sources="virtuLocalID virtuHomeOrganization" dest="vppn">
-                  <Template>$virtuLocalID@$virtuHomeOrganization</Template>
-                </AttributeResolver>
-                <AttributeResolver type="Template" sources="EduuniId" dest="EduuniIdScoped">
-                  <Template>$EduuniId@eduuni.fi</Template>
-                </AttributeResolver>
-              </AttributeResolver>
+  xml:
+    file: "/etc/shibboleth/shibboleth2.xml"
+    xpath: '/x:SPConfig/x:ApplicationDefaults/x:AttributeExtractor'
+    insertafter: true
+    pretty_print: yes
+    namespaces:
+      x: urn:mace:shibboleth:3.0:native:sp:config
+    add_children:
+      - AttributeResolver:
+          type: "Chaining"
+          _:
+            - AttributeResolver:
+                type: "Query"
+                subjectMatch: "true"
+            - AttributeResolver:
+                type: "Template"
+                sources: "virtuLocalID virtuHomeOrganization"
+                dest: "vppn"
+                _:
+                  - Template: "$virtuLocalID@$virtuHomeOrganization"
+            - AttributeResolver:
+                type: "Template"
+                sources: "EduuniId"
+                dest: "EduuniIdScoped"
+                _:
+                  - Template: "$EduuniId@eduuni.fi"
+
+  #  blockinfile:
+  #    dest: "/etc/shibboleth/shibboleth2.xml"
+  #    marker: "        <!-- {mark} ansible managed - AttributeResolver block -->"
+  #    insertafter: '<AttributeExtractor type='
+  #    content: |2
+  #              <AttributeResolver type="Chaining">
+  #                <AttributeResolver type="Query" subjectMatch="true"/>
+  #                <AttributeResolver type="Template" sources="virtuLocalID virtuHomeOrganization" dest="vppn">
+  #                  <Template>$virtuLocalID@$virtuHomeOrganization</Template>
+  #                </AttributeResolver>
+  #                <AttributeResolver type="Template" sources="EduuniId" dest="EduuniIdScoped">
+  #                  <Template>$EduuniId@eduuni.fi</Template>
+  #                </AttributeResolver>
+  #              </AttributeResolver>
 
 
 - name: Configure | Proxy | Del | Serializers < conf/global.xml
@@ -107,7 +144,7 @@
     xpath: /x:beans
     pretty_print: yes
     #    insertbefore: yes
-    namespaces: &namespaces
+    namespaces:
       x: "http://www.springframework.org/schema/beans"
       p: "http://www.springframework.org/schema/p"
       c: "http://www.springframework.org/schema/c"
