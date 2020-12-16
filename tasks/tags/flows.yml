@@ -35,20 +35,32 @@
     namespaces:
       x: http://www.springframework.org/schema/beans
       p: http://www.springframework.org/schema/p
+      util: http://www.springframework.org/schema/util
   with_items:
     - { xpath: "//x:bean[@id='ValidateShibbolethAuthentication']", attribute: "p:populateHeaders", value: "true", ensure: present }
     - { xpath: "//x:bean[@id='ValidateShibbolethAuthentication']", attribute: "p:usernameAttribute", value: "eppn,vppn,mpassUid,EduuniId,nationalIdentificationNumber,eduPersonUniqueId", ensure: present }
     - { xpath: "//x:bean[@id='ExtractShibbolethHeadersFromRequest']", attribute: "p:headerEncoding", value: "ISO-8859-1", ensure: present }
     - { xpath: "//x:bean[@id='ExtractShibbolethPrincipals']", attribute: "p:headerEncoding", value: "ISO-8859-1", ensure: present }
-
+    - { xpath: "//util:list[@id='attributeNames']/x:value", attribute: NULL, value: NULL, ensure: absent }
   loop_control:
     loop_var: shibbolethproxy_item
   notify: restart shibboleth-idp
 
+- name: ShibSP | Shibboleth IdP | Configure | populateHeaders | vppn, eppn
+  xml:
+    file: "{{ shibbolethidp_idp_home }}/flows/authn/Shib/shib-beans.xml"
+    xpath: "//util:list[@id='attributeNames']"
+    pretty_print: yes
+    namespaces:
+      x: http://www.springframework.org/schema/beans
+      util: http://www.springframework.org/schema/util
+    add_children:
+      - value: eppn
+      - value: vppn
 
 - name: Proxy | ShibSP | clean | SessionInitiators
   xml:
-    xpath: "/x:SPConfig/x:ApplicationDefaults/x:Sessions/x:SessionInitiator[@Location={{ shibbolethproxy_item['location'] }}]"
+    xpath: "/x:SPConfig/x:ApplicationDefaults/x:Sessions/x:SessionInitiator[@Location=\"/{{ shibbolethproxy_item['location'] }}\"]"
     ensure: absent
     file: /etc/shibboleth/shibboleth2.xml
     namespaces:
@@ -105,24 +117,6 @@
   loop_control:
     loop_var: shibbolethproxy_item
   notify: restart shibboleth-sp
-
-  #- name: ShibSP | Flows | Configure | SessionInitiator | /etc/shibboleth/shibboleth2.xml
-  #  blockinfile:
-  #    dest: "/etc/shibboleth/shibboleth2.xml"
-  #    marker: "            <!-- {mark} ansible managed - {{ shibbolethproxy_item['location'] }} SessionInitiator  -->"
-  #    insertbefore: "</Sessions>"
-  #    block: |2
-  #                  <SessionInitiator type="Chaining" Location="/{{ shibbolethproxy_item['location'] }}" {% if shibbolethproxy_item.entityid is defined %}entityID="{{ shibbolethproxy_item['entityid']}}"{% endif %} Default="false" id="{{ shibbolethproxy_item['id'] }}" relayState="cookie">
-  #                    <SessionInitiator type="SAML2" defaultACSIndex="1" acsByIndex="false" template="bindingTemplate.html" />
-  #                    {% if shibbolethproxy_item.ds is defined %}
-  #                    <SessionInitiator type="SAMLDS" URL="{{ shibbolethproxy_item['ds'] }}" />
-  #                    {% endif %}
-  #                  </SessionInitiator>
-  #  with_items: "{{ shibbolethproxy_flows }}"
-  #  loop_control:
-  #    loop_var: shibbolethproxy_item
-  #  notify:
-  #   - restart shibboleth-sp
 
 - name: ShibSP | Flows | Create | Authentication methods | flow | directories
   file:
