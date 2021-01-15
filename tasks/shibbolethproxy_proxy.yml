@@ -72,22 +72,41 @@
             </Extensions>
           </OutOfProcess>
 
+- name: Proxy | ShibSP | Remove | AttributeResolver
+  xml:
+    path: /etc/shibboleth/shibboleth2.xml
+    xpath: "/x:SPConfig/x:ApplicationDefaults/x:AttributeResolver[@type='Chaining']"
+    state: absent
+    namespaces:
+      x: urn:mace:shibboleth:3.0:native:sp:config
 
-- name: Proxy | Shibboleth-sp | Configure | AttributeResolver 
-  blockinfile:
-    dest: "/etc/shibboleth/shibboleth2.xml"
-    marker: "        <!-- {mark} ansible managed - AttributeResolver block -->"
-    insertafter: '<AttributeExtractor type='
-    content: |2
-              <AttributeResolver type="Chaining">
-                <AttributeResolver type="Query" subjectMatch="true"/>
-                <AttributeResolver type="Template" sources="virtuLocalID virtuHomeOrganization" dest="vppn">
-                  <Template>$virtuLocalID@$virtuHomeOrganization</Template>
-                </AttributeResolver>
-                <AttributeResolver type="Template" sources="EduuniId" dest="EduuniIdScoped">
-                  <Template>$EduuniId@eduuni.fi</Template>
-                </AttributeResolver>
-              </AttributeResolver>
+- name: Proxy | Shibboleth-sp | Configure | AttributeResolver
+  xml:
+    file: "/etc/shibboleth/shibboleth2.xml"
+    xpath: '/x:SPConfig/x:ApplicationDefaults/x:AttributeExtractor'
+    insertafter: true
+    pretty_print: yes
+    namespaces:
+      x: urn:mace:shibboleth:3.0:native:sp:config
+    add_children:
+      - AttributeResolver:
+          type: "Chaining"
+          _:
+            - AttributeResolver:
+                type: "Query"
+                subjectMatch: "true"
+            - AttributeResolver:
+                type: "Template"
+                sources: "virtuLocalID virtuHomeOrganization"
+                dest: "vppn"
+                _:
+                  - Template: "$virtuLocalID@$virtuHomeOrganization"
+            - AttributeResolver:
+                type: "Template"
+                sources: "EduuniId"
+                dest: "EduuniIdScoped"
+                _:
+                  - Template: "$EduuniId@eduuni.fi"
 
 - name: Shibboleth IdP | OIDC | Configure | global.xml | Serializers
   blockinfile:

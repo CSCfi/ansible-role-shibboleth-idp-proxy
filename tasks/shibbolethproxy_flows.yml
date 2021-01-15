@@ -45,23 +45,65 @@
     loop_var: shibbolethproxy_item
   notify: restart shibboleth-idp
 
-- name: ShibSP | Flows | Configure | SessionInitiator | /etc/shibboleth/shibboleth2.xml
-  blockinfile:
-    dest: "/etc/shibboleth/shibboleth2.xml"
-    marker: "            <!-- {mark} ansible managed - {{ shibbolethproxy_item['location'] }} SessionInitiator  -->"
-    insertbefore: "</Sessions>"
-    block: |2
-                  <SessionInitiator type="Chaining" Location="/{{ shibbolethproxy_item['location'] }}" {% if shibbolethproxy_item.entityid is defined %}entityID="{{ shibbolethproxy_item['entityid']}}"{% endif %} Default="false" id="{{ shibbolethproxy_item['id'] }}" relayState="cookie">
-                    <SessionInitiator type="SAML2" defaultACSIndex="1" acsByIndex="false" template="bindingTemplate.html" />
-                    {% if shibbolethproxy_item.ds is defined %}
-                    <SessionInitiator type="SAMLDS" URL="{{ shibbolethproxy_item['ds'] }}" />
-                    {% endif %}
-                  </SessionInitiator>
+- name: Proxy | ShibSP | clean | SessionInitiators
+  xml:
+    xpath: "/x:SPConfig/x:ApplicationDefaults/x:Sessions/x:SessionInitiator[@Location=\"/{{ shibbolethproxy_item['location'] }}\"]"
+    ensure: absent
+    file: /etc/shibboleth/shibboleth2.xml
+    namespaces:
+      x: urn:mace:shibboleth:3.0:native:sp:config
   with_items: "{{ shibbolethproxy_flows }}"
   loop_control:
     loop_var: shibbolethproxy_item
   notify:
    - restart shibboleth-sp
+
+- name: Proxy | ShibSP | Configure | SessionInitiator
+  xml:
+    file: "/etc/shibboleth/shibboleth2.xml"
+    xpath: "//x:SPConfig/x:ApplicationDefaults/x:Sessions/x:Handler[@type='DiscoveryFeed']"
+    insertafter: yes
+    pretty_print: yes
+    namespaces:
+      x: urn:mace:shibboleth:3.0:native:sp:config
+    add_children:
+      - SessionInitiator:
+          type: "Chaining"
+          Location: "/{{ shibbolethproxy_item['location'] }}"
+          entityID: "{{ shibbolethproxy_item['entityid'] | default('') }}"
+          Default: "false"
+          id: "{{ shibbolethproxy_item['id'] }}"
+          relayState: "cookie"
+          _:
+             - SessionInitiator:
+                 type: "SAML2"
+                 defaultACSIndex: "1"
+                 acsByIndex: "false"
+                 template: "bindingTemplate.html"
+             - SessionInitiator:
+                 type: "SAMLDS"
+                 URL: "{{ shibbolethproxy_item['ds'] | default('') }}"
+  with_items: "{{ shibbolethproxy_flows }}"
+  loop_control:
+    loop_var: shibbolethproxy_item
+  notify:
+   - restart shibboleth-sp
+
+- name: Proxy | ShibSP | clean | SessionInitiators
+  xml:
+    xpath: "{{ shibbolethproxy_item.xpath }}"
+    attribute: "{{ shibbolethproxy_item.attribute }}"
+    value: "{{ shibbolethproxy_item.value }}"
+    ensure: "{{ shibbolethproxy_item.ensure }}"
+    file: /etc/shibboleth/shibboleth2.xml
+    namespaces:
+      x: urn:mace:shibboleth:3.0:native:sp:config
+  with_items:
+    - { xpath: "/x:SPConfig/x:ApplicationDefaults/x:Sessions/x:SessionInitiator[@entityID='']/@entityID", attribute: "entityID", value: NULL, ensure: absent }
+    - { xpath: "/x:SPConfig/x:ApplicationDefaults/x:Sessions/x:SessionInitiator/x:SessionInitiator[@URL='']", attribute: NULL, value: NULL, ensure: absent }
+  loop_control:
+    loop_var: shibbolethproxy_item
+  notify: restart shibboleth-sp
 
 - name: ShibSP | Flows | Create | Authentication methods | flow | directories
   file:
