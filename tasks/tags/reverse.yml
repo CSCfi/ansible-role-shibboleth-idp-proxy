@@ -9,8 +9,62 @@
 - name: Install mod_auth_openidc and assets
   yum:  "{{ item }}"
   with_items: 
-    - https://github.com/zmartzone/mod_auth_openidc/releases/download/v2.4.0/cjose-0.6.1.5-1.el7.x86_64.rpm
-    - https://github.com/zmartzone/mod_auth_openidc/releases/download/v2.4.5/mod_auth_openidc-2.4.5-1.el8.x86_64.rpm
+    - "{{ mod_auth_openidc_version_location }}/releases/download/{{ mod_auth_openidc_version}}/mod_auth_openidc-{{ mod_auth_openidc_version}}.x86_64.rpm"
+    - "{{ mod_auth_openidc_cjose_version_location }}"
   notify: apache-restart
 
+- name: ReverseProxy | Shibboleth IdP | Download | Plugin v{{ shibbolethroxy_reverseproxyplugin_version }}
+  unarchive:
+    extra_opts: ['--strip-components=1']
+    src: "{{ shibbolethproxy_reverseproxyplugin_location }}/releases/download/{{ shibbolethproxy_reverseproxyplugin_version }}/shibboleth-idp-reverseproxy-distribution-{{ shibbolethproxy_reverseproxyplugin_version | regex_replace('[^0-9.]', '') }}.tar.gz"
+    remote_src: yes
+    dest: "{{ shibbolethidp_idp_home }}"
+    creates: "{{ shibbolethidp_idp_home }}/edit-webapp/WEB-INF/lib/idp-authn-api-shibsp-{{ shibbolethproxy_shibspplugin_version | regex_replace('[^0-9.]', '') }}.jar"
+    group: jetty
+    owner: root
+    mode: 0640
+  notify: rebuild shibboleth-idp
 
+- name: ReverseProxy | Shibboleth IdP | idp.properties | (to include reverseproxy.properties) 
+  lineinfile:
+    dest: "{{ shibbolethidp_idp_home }}/conf/idp.properties"
+    regexp: ^(?!.*oidc)(idp.additionalProperties.*)$
+    line: '\1, /conf/reverseproxy.properties'
+    backrefs: yes
+
+- name: ReverseProxy | Shibboleth IdP | idp.properties | authn/ReverseProxy flow
+  lineinfile:
+    dest: "{{ shibbolethidp_idp_home }}/conf/idp.properties"
+    regexp: ^(?!.*oidc)(idp.additionalProperties.*)$
+    line: '\1, /conf/reverseproxy.properties'
+    backrefs: yes
+
+- name: ReverseProxy | Shibboleth IdP  idp.properties | authn/ReverseProxy flow
+  lineinfile:
+    dest: "{{ shibbolethidp_idp_home }}/conf/idp.properties"
+    regexp: ^(?!.*{{ shibbolethproxy_item['location'] }})(idp.authn.flows=.*)$
+    line: '\1| authn/ReverseProxy'
+    backrefs: yes
+  notify:
+   - restart shibboleth-idp
+
+- name: ReverseProxy | Apache | shib.conf | Enable valid-user mode
+  lineinfile:
+    dest: "/etc/httpd/conf.d/shib.conf"
+    line: 
+      ShibCompatValidUser On
+
+- name: ReverseProxy | Apache | auth_openidc.conf | IdP support
+  blockinfile:
+    dest: "/etc/httpd/conf.d/auth_openidc.conf"
+    marker: "### {mark} ansible managed - idp block ###"
+    insertafter: EOF
+    block: |
+      <Location /idp/profile/>
+        AuthType openid-connect
+        Require valid-user
+        OIDCUnAuthAction pass
+        RequestHeader set OIDC_REMOTE_USER expr=%{REMOTE_USER}
+      </Location>
+  notify:
+    - restart apache
