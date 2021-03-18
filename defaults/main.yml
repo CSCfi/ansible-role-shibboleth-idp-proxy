@@ -3,7 +3,7 @@ shibbolethproxy_shibspplugin_version: 1.0.0-rc3
 shibbolethproxy_shibspplugin_location: 'https://github.com/CSCfi/shibboleth-idp-authn-shibsp'
 
 ### DISCO shibboleth-idp-authn-discovery
-shibbolethproxy_discoplugin_version: 1.0.0-rc1
+shibbolethproxy_discoplugin_version: 1.0.0-rc2
 shibbolethproxy_discoplugin_location: 'https://github.com/CSCfi/shibboleth-idp-authn-discovery'
 shibbolethproxy_wwwroot: /var/www/html
 
