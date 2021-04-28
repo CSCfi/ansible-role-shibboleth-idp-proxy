@@ -8,7 +8,7 @@ A role which installs Shibboleth IdP Proxy on RedHat/Debian servers.
 Can be used to proxy authentication requests from SAML2 or OpenID Connect services to SAML2 Identity Providers. Support for OpenID Connect providers is not in the current release. Provides a discovery page where user can select preferred authentication.
 
 Built from these components:
-* Shibboleth IdP 3
+* Shibboleth IdP 4
 * Shibboleth SP 3
 * https://github.com/mpassid/shibboleth-idp-authn-shibsp
 * https://github.com/mpassid/shibboleth-idp-authn-discovery
