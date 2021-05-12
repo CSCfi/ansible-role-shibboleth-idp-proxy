@@ -28,16 +28,40 @@
 # - name: Shibboleth-Proxy Disco
 # ===========================================
 
+#- name: Disco | Configure | AuthenticationFlow | authn/general-authn.xml
+#  blockinfile:
+#    dest: "{{ shibbolethidp_idp_home }}/conf/authn/general-authn.xml"
+#    marker: "      <!-- {mark} ansible managed - Disco authentication flow ! KEEP ON TOP ! -->"
+#    insertafter: "shibboleth.AvailableAuthenticationFlows"
+#    block: |2
+#              <bean id="authn/Disco" parent="shibboleth.AuthenticationFlow"
+#                    p:nonBrowserSupported="false" p:forcedAuthenticationSupported="true"/>
+#  notify:
+#   - restart shibboleth-idp
+
+- name: Configure | Proxy | Del | AuthenticationFlows < authn/general-authn.xml
+  xml:
+    file: "{{ shibbolethidp_idp_home }}/conf/authn/general-authn.xml"
+    xpath: /x:beans/x:bean[@id='authn/Disco']
+    namespaces:
+      x: "http://www.springframework.org/schema/beans"
+    state: absent
+
 - name: Disco | Configure | AuthenticationFlow | authn/general-authn.xml
-  blockinfile:
-    dest: "{{ shibbolethidp_idp_home }}/conf/authn/general-authn.xml"
-    marker: "      <!-- {mark} ansible managed - Disco authentication flow ! KEEP ON TOP ! -->"
-    insertafter: "shibboleth.AvailableAuthenticationFlows"
-    block: |2
-              <bean id="authn/Disco" parent="shibboleth.AuthenticationFlow"
-                    p:nonBrowserSupported="false" p:forcedAuthenticationSupported="true"/>
-  notify:
-   - restart shibboleth-idp
+  xml:
+    file: "{{ shibbolethidp_idp_home }}/conf/authn/general-authn.xml"
+    xpath: /x:beans/x:bean[@id='authn/SAML']
+    pretty_print: yes
+    insertbefore: yes
+    namespaces:
+      x: "http://www.springframework.org/schema/beans"
+      p: "http://www.springframework.org/schema/p"
+    add_children:
+      - bean:
+          id: "authn/Disco"
+          parent: "shibboleth.AuthenticationFlow"
+          "{http://www.springframework.org/schema/p}nonBrowserSupported": "false"
+          "{http://www.springframework.org/schema/p}forcedAuthenticationSupported": "true"
 
 - name: Disco | Configure | Flow | idp.properties
   lineinfile:
@@ -64,7 +88,7 @@
     xpath: //util:list[@id='shibboleth.RelyingPartyOverrides']
     pretty_print: yes
     #    insertbefore: yes
-    namespaces: &namespaces
+    namespaces:
       x: "http://www.springframework.org/schema/beans"
       p: "http://www.springframework.org/schema/p"
       c: "http://www.springframework.org/schema/c"

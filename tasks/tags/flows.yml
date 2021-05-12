@@ -212,7 +212,7 @@
   notify:
    - restart shibboleth-idp
 
-- name: ShibSP | Flows | Configure | Flows | idp.properties
+- name: ShibSP i| Flows | Configure | Flows | idp.properties
   lineinfile:
     dest: "{{ shibbolethidp_idp_home }}/conf/idp.properties"
     regexp: ^(?!.*{{ shibbolethproxy_item['location'] }})(idp.authn.flows=.*)$
@@ -223,3 +223,6 @@
     loop_var: shibbolethproxy_item
   notify:
    - restart shibboleth-idp
+
+     ## RelyingPartyyn entityID:t jos muuttuvat
+     ## Apache lokaatiot

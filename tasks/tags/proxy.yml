@@ -214,3 +214,13 @@
 #      </bean>
 #  notify:
 #    - restart shibboleth-idp
+#
+- name: Test for line
+  shell: grep -c "idp.authn.flows" {{ shibbolethidp_idp_home }}/conf/idp.properties || true
+  register: test_grep
+
+- name: add idp.authn.flows host to properties
+  lineinfile:
+    dest: "{{ shibbolethidp_idp_home }}/conf/idp.properties"
+    line: idp.authn.flows=
+  when: test_grep.stdout == "0"
