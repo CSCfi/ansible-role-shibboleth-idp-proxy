@@ -38,9 +38,11 @@
       util: http://www.springframework.org/schema/util
   with_items:
     - { xpath: "//x:bean[@id='ValidateShibbolethAuthentication']", attribute: "p:populateHeaders", value: "true", ensure: present }
-    - { xpath: "//x:bean[@id='ValidateShibbolethAuthentication']", attribute: "p:usernameAttribute", value: "eppn,vppn,mpassUid,EduuniId,nationalIdentificationNumber,eduPersonUniqueId", ensure: present }
+    - { xpath: "//x:bean[@id='ValidateShibbolethAuthentication']", attribute: "p:usernameAttribute", value: "SHIBSP-eppn,eppn,vppn,mpassUid,EduuniId,nationalIdentificationNumber,eduPersonUniqueId", ensure: present }
     - { xpath: "//x:bean[@id='ExtractShibbolethHeadersFromRequest']", attribute: "p:headerEncoding", value: "ISO-8859-1", ensure: present }
+    - { xpath: "//x:bean[@id='ExtractShibbolethHeadersFromRequest']/x:constructor-arg", attribute: "value", value: "SHIBSP-", ensure: present }
     - { xpath: "//x:bean[@id='ExtractShibbolethPrincipals']", attribute: "p:headerEncoding", value: "ISO-8859-1", ensure: present }
+    - { xpath: "//x:bean[@id='ExtractShibbolethPrincipals']/x:constructor-arg", attribute: "value", value: "SHIBSP-", ensure: present }
     - { xpath: "//util:list[@id='attributeNames']/x:value", attribute: NULL, value: NULL, ensure: absent }
   loop_control:
     loop_var: shibbolethproxy_item
@@ -55,7 +57,7 @@
       x: http://www.springframework.org/schema/beans
       util: http://www.springframework.org/schema/util
     add_children:
-      - value: eppn
+      - value: SHIBSP-eppn
       - value: vppn
 
 - name: Proxy | ShibSP | clean | SessionInitiators
@@ -147,57 +149,105 @@
     loop_var: shibbolethproxy_item
   notify: restart shibboleth-idp
 
+- name: ShibSP | Flows | Create | Authentication method | bean | files
+  copy:
+    dest: "{{ shibbolethidp_idp_home }}/flows/authn/{{ shibbolethproxy_item['location'] }}/{{ shibbolethproxy_item['location'] | lower }}-beans.xml"
+    content: |2
+      <?xml version='1.0' encoding='UTF-8'?>
+      <beans xmlns="http://www.springframework.org/schema/beans" xmlns:context="http://www.springframework.org/schema/context" xmlns:util="http://www.springframework.org/schema/util" 
+        xmlns:p="http://www.springframework.org/schema/p" 
+        xmlns:c="http://www.springframework.org/schema/c" 
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd" default-init-method="initialize" default-destroy-method="destroy">
+
+        <import resource="../../../conf/authn/shib-authn-config.xml"/> <bean class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer" p:placeholderPrefix="%{" p:placeholderSuffix="}"/>
+        <bean class="net.shibboleth.ext.spring.config.IdentifiableBeanPostProcessor"/>
+        <bean class="net.shibboleth.idp.profile.impl.ProfileActionBeanPostProcessor"/>
+
+        <bean id="shibboleth.authn.Shib.acceptablePredicate" class="fi.csc.shibboleth.authn.impl.IdpFoundFromMetadataResolverPredicate" c:metadataResolver-ref="{{ shibbolethproxy_item['location'] }}Feed" />
+ 
+        <bean id="{{ shibbolethproxy_item['location'] }}Feed" class="org.opensaml.saml.metadata.resolver.impl.FileBackedHTTPMetadataResolver" c:client-ref="shibboleth.NonCachingHttpClient"
+         c:backupFilePath="/tmp/haka-test-metadata.xml" c:metadataURL="https://haka.funet.fi/metadata/haka_test_metadata_signed.xml" p:parserPool-ref="shibboleth.ParserPool" p:id="HakaTestFeed" />
+      </beans>
+  with_items: "{{ shibbolethproxy_flows }}"
+  loop_control:
+    loop_var: shibbolethproxy_item
+  notify: restart shibboleth-idp
+
 - name: ShibSP | Flows | Configure | AuthenticationFlows | authn/general-authn.xml
   blockinfile:
     dest: "{{ shibbolethidp_idp_home }}/conf/authn/general-authn.xml"
-    marker: "      <!-- {mark} ansible managed - {{ shibbolethproxy_item['location'] }} autentication flow  -->"
-    insertbefore: "</util:list>"
+    marker: "    <!-- {mark} ansible managed - {{ shibbolethproxy_item['location'] }} autentication flow  -->"
+    insertbefore: "</beans>"
     block: |2
-              <bean id="authn/{{ shibbolethproxy_item['location'] }}" parent="shibboleth.AuthenticationFlow" p:nonBrowserSupported="false" p:forcedAuthenticationSupported="true">
-                <property name="supportedPrincipals">
-                  <list>
-                    {% if shibbolethproxy_item['SAML2AuthnContextClassRefs'] is defined %}
-                    {% for SAML2AuthnContextClassRef in shibbolethproxy_item['SAML2AuthnContextClassRefs'] %}
-                    <bean parent="shibboleth.SAML2AuthnContextClassRef" c:classRef="{{ SAML2AuthnContextClassRef }}" />
-                    <bean parent="shibboleth.OIDCAuthnContextClassReference" c:classRef="{{ SAML2AuthnContextClassRef }}" />
-                    {% endfor %}
-                    {% else %}
-                    <bean parent="shibboleth.SAML2AuthnContextClassRef" c:classRef="https://{{ shibbolethidp_fqdn }}/{{ shibbolethproxy_item['location'] }}" />
-                    <bean parent="shibboleth.OIDCAuthnContextClassReference" c:classRef="https://{{ shibbolethidp_fqdn }}/{{ shibbolethproxy_item['location'] }}" />
-                    {% endif %}
-                  </list>
-                </property>
-              </bean>
+          <bean id="authn/{{ shibbolethproxy_item['location'] }}" parent="shibboleth.AuthenticationFlow" p:nonBrowserSupported="false" p:forcedAuthenticationSupported="true">
+            <property name="supportedPrincipals">
+              <list>
+                {% if shibbolethproxy_item['SAML2AuthnContextClassRefs'] is defined %}
+                {% for SAML2AuthnContextClassRef in shibbolethproxy_item['SAML2AuthnContextClassRefs'] %}
+                <bean parent="shibboleth.SAML2AuthnContextClassRef" c:classRef="{{ SAML2AuthnContextClassRef }}" />
+                <bean parent="shibboleth.OIDCAuthnContextClassReference" c:classRef="{{ SAML2AuthnContextClassRef }}" />
+                {% endfor %}
+                {% else %}
+                <bean parent="shibboleth.SAML2AuthnContextClassRef" c:classRef="https://{{ shibbolethidp_fqdn }}/{{ shibbolethproxy_item['location'] }}" />
+                <bean parent="shibboleth.OIDCAuthnContextClassReference" c:classRef="https://{{ shibbolethidp_fqdn }}/{{ shibbolethproxy_item['location'] }}" />
+                {% endif %}
+              </list>
+            </property>
+          </bean>
   with_items: "{{ shibbolethproxy_flows }}"
   loop_control:
     loop_var: shibbolethproxy_item
   notify:
    - restart shibboleth-idp
 
-#- name: Shibboleth IdP | Flows | Remove | Authn/Password | 
-#  xml:
-#    xpath: "//x:bean[@id='authn/Password']"
-#    state: "absent"
-#    file: "{{ shibbolethidp_idp_home }}/conf/authn/general-authn.xml"
-#    namespaces:
-#      x: http://www.springframework.org/schema/beans
-#      p: http://www.springframework.org/schema/p
-#
-#- name: ShibSP | Flows | Configure | AuthenticationFlows | authn/general-authn.xml | loginCSC
-#  blockinfile:
-#    dest: "{{ shibbolethidp_idp_home }}/conf/authn/general-authn.xml"
-#    marker: "      <!-- {mark} ansible managed - loginCSC autentication flow  -->"
-#    insertbefore: "</util:list>"
-#    block: |2
-#              <bean id="authn/Password" parent="shibboleth.AuthenticationFlow" p:nonBrowserSupported="false" p:forcedAuthenticationSupported="true">
-#                    <property name="supportedPrincipals">
-#                      <list>
-#                        <bean parent="shibboleth.SAML2AuthnContextClassRef" c:classRef="https://{{ shibbolethidp_fqdn }}/loginCSC" />
-#                        <bean parent="shibboleth.OIDCAuthnContextClassReference" c:classRef="https://{{ shibbolethidp_fqdn }}/loginCSC" />
-#                      </list>
-#                    </property>
-#              </bean>
+- name: ShibSP | Flows | Configure | AuthenticationFlows | authn/general-authn.xml | Disco
+  xml:
+    file: "{{ shibbolethidp_idp_home }}/conf/authn/general-authn.xml"
+    xpath: "//x:bean[@id='authn/Disco']/x:property[@name='supportedPrincipals']/x:list"
+    #    insertafter: yes
+    pretty_print: yes
+    namespaces:
+      x: http://www.springframework.org/schema/beans
+      p: http://www.springframework.org/schema/p
+      util: http://www.springframework.org/schema/util
+    add_children:
+      - bean:
+          parent: "shibboleth.OIDCAuthnContextClassReference"
+          "{http://www.springframework.org/schema/c}classRef": "https://{{ shibbolethidp_fqdn }}/{{ shibbolethproxy_item['location'] }}"
+      - bean:
+          parent: "shibboleth.SAML2AuthnContextClassRef"
+          "{http://www.springframework.org/schema/c}classRef": "https://{{ shibbolethidp_fqdn }}/{{ shibbolethproxy_item['location'] }}"
+  with_items: "{{ shibbolethproxy_flows }}"
+  loop_control:
+    loop_var: shibbolethproxy_item
+  notify:
+   - restart shibboleth-idp
 
+- name: Proxy | Apache | Configure | conf.d/shib.conf | /idp block
+  blockinfile:
+    dest: "/etc/httpd/conf.d/shib.conf"
+    marker: "### {mark} ansible managed - {{ shibbolethproxy_item['location'] }} block ###"
+    insertafter: EOF
+    block: |
+      <Location /idp/Authn/{{ shibbolethproxy_item['location'] }}>
+        AuthType shibboleth
+        require shibboleth
+        ShibUseHeaders On
+      </Location>
+  with_items: "{{ shibbolethproxy_flows }}"
+  loop_control:
+    loop_var: shibbolethproxy_item
+  notify:
+    - restart apache
+
+- name: Proxy | Apache | Remove | conf.d/shib.conf | /idp block
+  blockinfile:
+    dest: "/etc/httpd/conf.d/shib.conf"
+    marker: "### {mark} ansible managed - idp block ###"
+    state: absent
+  notify:
+    - restart apache
+ 
 - name: ShibSP | Flows | Configure | AuthenticationFlows | authn/shib-authn-config.xml
   blockinfile:
     dest: "{{ shibbolethidp_idp_home }}/conf/authn/shib-authn-config.xml"

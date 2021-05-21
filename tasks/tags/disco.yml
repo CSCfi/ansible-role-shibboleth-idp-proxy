@@ -56,12 +56,31 @@
     namespaces:
       x: "http://www.springframework.org/schema/beans"
       p: "http://www.springframework.org/schema/p"
+      c: "http://www.springframework.org/schema/c"
     add_children:
       - bean:
           id: "authn/Disco"
           parent: "shibboleth.AuthenticationFlow"
           "{http://www.springframework.org/schema/p}nonBrowserSupported": "false"
           "{http://www.springframework.org/schema/p}forcedAuthenticationSupported": "true"
+          _:
+            - property: 
+                name: supportedPrincipals
+                _:
+                  - list:
+                      _:
+                         - bean:
+                             parent: shibboleth.SAML2AuthnContextClassRef
+                             "{http://www.springframework.org/schema/c}classRef": https://refeds.org/profile/sfa
+                         - bean:
+                             parent: shibboleth.OIDCAuthnContextClassReference
+                             "{http://www.springframework.org/schema/c}classRef": https://refeds.org/profile/sfa
+                         - bean:
+                             parent: shibboleth.SAML2AuthnContextClassRef
+                             "{http://www.springframework.org/schema/c}classRef": https://refeds.org/profile/mfa
+                         - bean:
+                             parent: shibboleth.OIDCAuthnContextClassReference
+                             "{http://www.springframework.org/schema/c}classRef": https://refeds.org/profile/mfa
 
 - name: Disco | Configure | Flow | idp.properties
   lineinfile:
@@ -96,7 +115,7 @@
     add_children:
       - bean:
           parent: "{{ shibbolethproxy_item.parent }}"
-          "{http://www.springframework.org/schema/p}responderIdLookupStrategy-ref": "profileResponderIdLookupFunction"
+          #"{http://www.springframework.org/schema/p}responderIdLookupStrategy-ref": "profileResponderIdLookupFunction"
           "{http://www.springframework.org/schema/c}relyingPartyIds": "{{ shibbolethproxy_item.ids }}"
           _:
             - property:
