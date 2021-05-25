@@ -139,7 +139,7 @@
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="http://www.springframework.org/schema/webflow http://www.springframework.org/schema/webflow/spring-webflow.xsd"
             parent="authn/Shib">
-        <view-state id="ExternalTransfer" view="externalRedirect:#{flowRequestContext.getActiveFlow().getApplicationContext().getBean('shibboleth.authn.{{ shibbolethproxy_item['location'] }}.externalAuthnPath')}&amp;forceAuthn=#{opensamlProfileRequestContext.getSubcontext(T(net.shibboleth.idp.authn.context.AuthenticationContext)).isForceAuthn()}&amp;isPassive=#{opensamlProfileRequestContext.getSubcontext(T(net.shibboleth.idp.authn.context.AuthenticationContext)).isPassive()}&amp;target=#{flowExecutionUrl}%26_eventId_proceed%3D1">
+        <view-state id="ExternalTransfer" view="externalRedirect:#{flowRequestContext.getActiveFlow().getApplicationContext().getBean('shibboleth.authn.{{ shibbolethproxy_item['location'] }}.externalHandler')}?forceAuthn=#{opensamlProfileRequestContext.getSubcontext(T(net.shibboleth.idp.authn.context.AuthenticationContext)).isForceAuthn()}&amp;isPassive=#{opensamlProfileRequestContext.getSubcontext(T(net.shibboleth.idp.authn.context.AuthenticationContext)).isPassive()}&amp;target=#{flowRequestContext.getActiveFlow().getApplicationContext().getBean('shibboleth.authn.{{ shibbolethproxy_item['location'] }}.externalAuthServlet')}%3Fconversation=#{flowExecutionContext.getKey().toString()}">
           <attribute name="csrf_excluded" value="true" type="boolean"/>
           <transition to="ValidateShibFlowAuthentication" />
         </view-state>
@@ -166,7 +166,7 @@
         <bean id="shibboleth.authn.Shib.acceptablePredicate" class="fi.csc.shibboleth.authn.impl.IdpFoundFromMetadataResolverPredicate" c:metadataResolver-ref="{{ shibbolethproxy_item['location'] }}Feed" />
  
         <bean id="{{ shibbolethproxy_item['location'] }}Feed" class="org.opensaml.saml.metadata.resolver.impl.FileBackedHTTPMetadataResolver" c:client-ref="shibboleth.NonCachingHttpClient"
-         c:backupFilePath="/tmp/haka-test-metadata.xml" c:metadataURL="https://haka.funet.fi/metadata/haka_test_metadata_signed.xml" p:parserPool-ref="shibboleth.ParserPool" p:id="HakaTestFeed" />
+         c:backupFilePath="/tmp/{{ shibbolethproxy_item['location'] }}-metadata.xml" c:metadataURL="{{ shibbolethproxy_item['metadataurl'] }}" p:parserPool-ref="shibboleth.ParserPool" p:id="{{ shibbolethproxy_item['location'] }}Feed" />
       </beans>
   with_items: "{{ shibbolethproxy_flows }}"
   loop_control:
@@ -254,8 +254,10 @@
     marker: "    <!-- {mark} ansible managed - {{ shibbolethproxy_item['location'] }} autentication flow  -->"
     insertafter: "default-destroy-method="
     block: |2
-          <bean id="shibboleth.authn.{{ shibbolethproxy_item['location'] }}.externalAuthnPath" class="java.lang.String"
-                c:_0="https://{{ shibbolethidp_fqdn }}/Shibboleth.sso/{{ shibbolethproxy_item['location'] }}?foo=bar" />
+          <bean id="shibboleth.authn.{{ shibbolethproxy_item['location'] }}.externalHandler" class="java.lang.String"
+                c:_0="https://{{ shibbolethidp_fqdn }}/Shibboleth.sso/{{ shibbolethproxy_item['location'] }}" />
+          <bean id="shibboleth.authn.{{ shibbolethproxy_item['location'] }}.externalAuthServlet" class="java.lang.String"
+                c:_0="https://dev-user-auth.csc.fi/idp/Authn/{{ shibbolethproxy_item['location'] }}" />
   with_items: "{{ shibbolethproxy_flows }}"
   loop_control:
     loop_var: shibbolethproxy_item
