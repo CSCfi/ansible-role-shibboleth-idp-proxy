@@ -1,25 +1,28 @@
 - name: initial packages
-  yum:
+  package:
     name:
       - jansson-devel
       - openssl-devel
     state: present
-    notify: apache-restart  
+  notify: restart apache
 
 - name: Install mod_auth_openidc and assets
-  yum:  "{{ item }}"
-  with_items: 
-    - "{{ mod_auth_openidc_version_location }}/releases/download/{{ mod_auth_openidc_version}}/mod_auth_openidc-{{ mod_auth_openidc_version}}.x86_64.rpm"
-    - "{{ mod_auth_openidc_cjose_version_location }}"
-  notify: apache-restart
+  yum:
+    name:
+      - "https://download-ib01.fedoraproject.org/pub/epel/8/Everything/x86_64/Packages/h/hiredis-0.13.3-13.el8.x86_64.rpm"
+      - "{{ mod_auth_openidc_version_location }}/releases/download/v{{ mod_auth_openidc_version}}/mod_auth_openidc-{{ mod_auth_openidc_version}}-1.el8.x86_64.rpm"
+      - "{{ mod_auth_openidc_cjose_version_location }}"
+    state: present
+    disable_gpg_check: yes
+  notify: restart apache
 
 - name: ReverseProxy | Shibboleth IdP | Download | Plugin v{{ shibbolethroxy_reverseproxyplugin_version }}
   unarchive:
     extra_opts: ['--strip-components=1']
-    src: "{{ shibbolethproxy_reverseproxyplugin_location }}/releases/download/{{ shibbolethproxy_reverseproxyplugin_version }}/shibboleth-idp-reverseproxy-distribution-{{ shibbolethproxy_reverseproxyplugin_version | regex_replace('[^0-9.]', '') }}.tar.gz"
+    src: "{{ shibbolethproxy_reverseproxyplugin_location }}/releases/download/v{{ shibbolethproxy_reverseproxyplugin_version }}/idp-authn-reverseproxy-distribution-{{ shibbolethproxy_reverseproxyplugin_version | regex_replace('[^0-9.]', '') }}-bin.tar.gz"
     remote_src: yes
     dest: "{{ shibbolethidp_idp_home }}"
-    creates: "{{ shibbolethidp_idp_home }}/edit-webapp/WEB-INF/lib/idp-authn-api-shibsp-{{ shibbolethproxy_shibspplugin_version | regex_replace('[^0-9.]', '') }}.jar"
+#    creates: "{{ shibbolethidp_idp_home }}/edit-webapp/WEB-INF/lib/idp-authn-api-shibsp-{{ shibbolethproxy_shibspplugin_version | regex_replace('[^0-9.]', '') }}.jar"
     group: jetty
     owner: root
     mode: 0640
@@ -28,25 +31,43 @@
 - name: ReverseProxy | Shibboleth IdP | idp.properties | (to include reverseproxy.properties) 
   lineinfile:
     dest: "{{ shibbolethidp_idp_home }}/conf/idp.properties"
-    regexp: ^(?!.*oidc)(idp.additionalProperties.*)$
+    regexp: ^(?!.*reverseproxy)(idp.additionalProperties.*)$
     line: '\1, /conf/reverseproxy.properties'
     backrefs: yes
 
-- name: ReverseProxy | Shibboleth IdP | idp.properties | authn/ReverseProxy flow
+- name: ReverseProxy | Shibboleth IdP | idp.properties | authn/ReverseProxy flow
   lineinfile:
     dest: "{{ shibbolethidp_idp_home }}/conf/idp.properties"
-    regexp: ^(?!.*oidc)(idp.additionalProperties.*)$
-    line: '\1, /conf/reverseproxy.properties'
-    backrefs: yes
-
-- name: ReverseProxy | Shibboleth IdP  idp.properties | authn/ReverseProxy flow
-  lineinfile:
-    dest: "{{ shibbolethidp_idp_home }}/conf/idp.properties"
-    regexp: ^(?!.*{{ shibbolethproxy_item['location'] }})(idp.authn.flows=.*)$
-    line: '\1| authn/ReverseProxy'
+    regexp: ^(?!.*ReverseProxy)(idp.authn.flows=.*)$
+    line: '\1|ReverseProxy'
     backrefs: yes
   notify:
    - restart shibboleth-idp
+
+- name: ReverseProxy | Configure | AuthenticationFlow | < authn/general-authn.xml
+  xml:
+    file: "{{ shibbolethidp_idp_home }}/conf/authn/general-authn.xml"
+    xpath: /x:beans/x:bean[@id='authn/reverseproxy']
+    namespaces:
+      x: "http://www.springframework.org/schema/beans"
+    state: absent
+
+- name: ReverseProxy | Configure | AuthenticationFlow | > authn/general-authn.xml
+  xml:
+    file: "{{ shibbolethidp_idp_home }}/conf/authn/general-authn.xml"
+    xpath: /x:beans/x:bean[@id='authn/SAML']
+    pretty_print: yes
+    insertbefore: yes
+    namespaces:
+      x: "http://www.springframework.org/schema/beans"
+      p: "http://www.springframework.org/schema/p"
+      c: "http://www.springframework.org/schema/c"
+    add_children:
+      - bean:
+          id: "authn/reverseproxy"
+          parent: "shibboleth.AuthenticationFlow"
+          "{http://www.springframework.org/schema/p}passiveAuthenticationSupported": "true"
+          "{http://www.springframework.org/schema/p}forcedAuthenticationSupported": "true"
 
 - name: ReverseProxy | Apache | shib.conf | Enable valid-user mode
   lineinfile:
@@ -58,8 +79,47 @@
   blockinfile:
     dest: "/etc/httpd/conf.d/auth_openidc.conf"
     marker: "### {mark} ansible managed - idp block ###"
+    create: yes
     insertafter: EOF
     block: |
+      LoadModule auth_openidc_module modules/mod_auth_openidc.so
+      OIDCProviderMetadataURL {{ vault_shibbolethproxy_OIDCProviderMetadataURL }}
+      OIDCClientID {{ vault_shibbolethproxy_OIDCClientID }}
+      OIDCClientSecret {{ vault_shibbolethproxy_OIDCClientSecret }}
+      OIDCScope "openid profile email voperson_external_affiliation eduperon_assurance eduperson_principal_name ssh_public_key voperson_external_id eduperson_orcid eduperson_entitlement uid voperson_id eduperson_scop$
+      OIDCCryptoPassphrase {{ vault_shibbolethproxy_OIDCClientSecret }}
+      OIDCPassClaimsAs {{ shibbolethproxy_OIDCPassClaimsAs }}
+      OIDCRedirectURI {{ shibbolethproxy_OIDCRedirectURI }}
+      OIDCOAuthRemoteUserClaim {{ shibbolethproxy_OIDCOAuthRemoteUserClaim }}
+      OIDCClaimPrefix {{ shibbolethproxy_OIDCClaimPrefix }}
+
+      LogLevel debug
+
+      <Location /oidc/>
+        AuthType openid-connect
+        Require valid-user
+        LogLevel debug
+      </Location>
+
+      <Location /idp/profile/>
+        AuthType openid-connect
+        Require valid-user
+        OIDCUnAuthAction pass
+        OIDCPassClaimsAs headers
+        RequestHeader set OIDC-CLAIM-REMOTEUSER expr=%{REMOTE_USER}
+        LogLevel debug
+      </Location>
+
+      <Location /protected/>
+        AuthType openid-connect
+        Require valid-user
+        OIDCPassClaimsAs headers
+        RequestHeader set OIDC-CLAIM-REMOTEUSER expr=%{REMOTE_USER}
+        RequestHeader set "HANS_REMOTE_USER" expr=%{REMOTE_USER}
+        RequestHeader set "HansLocation" YES
+        LogLevel debug
+      </Location>
+
       <Location /idp/profile/>
         AuthType openid-connect
         Require valid-user

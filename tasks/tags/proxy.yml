@@ -124,55 +124,19 @@
   #                  <Template>$EduuniId@eduuni.fi</Template>
   #                </AttributeResolver>
   #              </AttributeResolver>
+  #  - '//x:bean[@id="shibboleth.PrincipalSerializers"]'
 
-
-- name: Configure | Proxy | Del | Serializers < conf/global.xml
+- name: Shibboleth SP | Configure | ApplicationDefaults -> attributePrefix
   xml:
-    file: "{{ shibbolethidp_idp_home }}/conf/global.xml"
-    xpath: "{{ nameiditem }}"
+    xpath: "{{ item.xpath }}"
+    attribute: "{{ item.attribute }}"
+    value: "{{ item.value }}"
+    ensure: "{{ item.ensure }}"
+    file: /etc/shibboleth/shibboleth2.xml
     namespaces:
-      x: "http://www.springframework.org/schema/beans"
-    state: absent
-  loop_control:
-    loop_var: nameiditem
+      x: urn:mace:shibboleth:3.0:native:sp:config
   with_items:
-    - '//x:bean[@id="shibboleth.PrincipalSerializers"]'
-
-- name: Configure | Proxy | Add | Serializers > conf/global.xml
-  xml:
-    file: "{{ shibbolethidp_idp_home }}/conf/global.xml"
-    xpath: /x:beans
-    pretty_print: yes
-    #    insertbefore: yes
-    namespaces:
-      x: "http://www.springframework.org/schema/beans"
-      p: "http://www.springframework.org/schema/p"
-      c: "http://www.springframework.org/schema/c"
-    add_children:
-      - bean:
-          id: shibboleth.PrincipalSerializers
-          class: org.springframework.beans.factory.config.ListFactoryBean
-          _:
-            - property:
-                name: sourceList
-                _: 
-                   - list:
-                       _:
-                          - bean:
-                              class: "fi.csc.shibboleth.authn.principal.impl.ShibAttributePrincipalSerializer"
-                          - bean: 
-                              class: "fi.csc.shibboleth.authn.principal.impl.ShibHeaderPrincipalSerializer"
-                          - bean:
-                              class: "net.shibboleth.idp.authn.principal.impl.UsernamePrincipalSerializer"
-                          - bean:
-                              class: "net.shibboleth.idp.authn.principal.impl.LDAPPrincipalSerializer"
-                          - bean:
-                              class: "net.shibboleth.idp.authn.duo.impl.DuoPrincipalSerializer"
-                          - bean:
-                              class: "net.shibboleth.idp.authn.principal.impl.IdPAttributePrincipalSerializer"
-                          - bean:
-                             class: "net.shibboleth.idp.authn.principal.impl.PasswordPrincipalSerializer"
-                             "{http://www.springframework.org/schema/p}dataSealer": "#{'%{idp.sealer.storeResource:}'.trim().length() > 0 ? getObject('shibboleth.DataSealer') : null}"
+    - { xpath: "//x:SPConfig/x:ApplicationDefaults", attribute: attributePrefix, value: "SHIBSP-", ensure: present }
 
 
 # - name: Shibboleth-IdP related configration
@@ -215,6 +179,34 @@
 #  notify:
 #    - restart shibboleth-idp
 #
+- name: Configure | {{ item }} | Del | bean[@id="authn/SAML"] < conf/authn/general-authn.xml
+  xml:
+    file: "{{ shibbolethidp_idp_home }}/conf/authn/general-authn.xml"
+    xpath: /x:beans/x:bean[@id="authn/SAML"]
+    namespaces:
+      x: "http://www.springframework.org/schema/beans"
+      util: "http://www.springframework.org/schema/util"
+    state: absent
+
+- name: Configure | {{ item }} | Add | bean[@id="authn/SAML"] > conf/authn/general-authn.xml
+  xml:
+    file: "{{ shibbolethidp_idp_home }}/conf/authn/general-authn.xml"
+    xpath: /x:beans
+    pretty_print: yes
+    namespaces:
+      x: "http://www.springframework.org/schema/beans"
+      p: "http://www.springframework.org/schema/p"
+      util: "http://www.springframework.org/schema/util"
+    add_children:
+      - bean:
+          id: "authn/SAML"
+          parent: "shibboleth.AuthenticationFlow"
+          "{http://www.springframework.org/schema/p}nonBrowserSupported": "false"
+          "{http://www.springframework.org/schema/p}passiveAuthenticationSupported": "true"
+          "{http://www.springframework.org/schema/p}forcedAuthenticationSupported": "true"
+          "{http://www.springframework.org/schema/p}proxyScopingEnforced": "true"
+          "{http://www.springframework.org/schema/p}discoveryRequired": "false"
+
 - name: Test for line
   shell: grep -c "idp.authn.flows" {{ shibbolethidp_idp_home }}/conf/idp.properties || true
   register: test_grep

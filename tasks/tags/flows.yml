@@ -141,6 +141,9 @@
             parent="authn/Shib">
         <view-state id="ExternalTransfer" view="externalRedirect:#{flowRequestContext.getActiveFlow().getApplicationContext().getBean('shibboleth.authn.{{ shibbolethproxy_item['location'] }}.externalHandler')}?forceAuthn=#{opensamlProfileRequestContext.getSubcontext(T(net.shibboleth.idp.authn.context.AuthenticationContext)).isForceAuthn()}&amp;isPassive=#{opensamlProfileRequestContext.getSubcontext(T(net.shibboleth.idp.authn.context.AuthenticationContext)).isPassive()}&amp;target=#{flowRequestContext.getActiveFlow().getApplicationContext().getBean('shibboleth.authn.{{ shibbolethproxy_item['location'] }}.externalAuthServlet')}%3Fconversation=#{flowExecutionContext.getKey().toString()}">
           <attribute name="csrf_excluded" value="true" type="boolean"/>
+          <on-render>
+            <evaluate expression="opensamlProfileRequestContext.getSubcontext(T(net.shibboleth.idp.authn.context.AuthenticationContext)).addSubcontext(new net.shibboleth.idp.authn.context.ExternalAuthenticationContext(new net.shibboleth.idp.authn.impl.ExternalAuthenticationImpl(calledAsExtendedFlow?:false)), true).setFlowExecutionUrl(flowExecutionUrl + '&amp;_eventId_proceed=3')" />
+          </on-render>
           <transition to="ValidateShibFlowAuthentication" />
         </view-state>
       </flow>
@@ -200,6 +203,32 @@
   notify:
    - restart shibboleth-idp
 
+- copy:
+    src: "{{ shibbolethidp_idp_home }}/dist/webapp/WEB-INF/web.xml"
+    dest: "{{ shibbolethidp_idp_home }}/edit-webapp/WEB-INF/web.xml"
+    remote_src: yes
+
+- name: ShibSP |+Flows | Configure |+AuthenticationFlows+| edit-webapp/WEB-INF/web.xml
+  blockinfile:
+    dest: "{{ shibbolethidp_idp_home }}/edit-webapp/WEB-INF/web.xml"
+    marker: "  <!-- {mark} ansible managed - {{ shibbolethproxy_item['location'] }} autentication flow  -->"
+    insertbefore: "<!-- Servlets and servlet mappings -->"
+    block: |2
+          <servlet>
+            <servlet-name>ShibbolethSpAuthnServlet</servlet-name>
+            <servlet-class>fi.csc.shibboleth.authn.impl.ShibbolethSpAuthnServlet</servlet-class>
+            <load-on-startup>2</load-on-startup>
+          </servlet>
+          <servlet-mapping>
+            <servlet-name>ShibbolethSpAuthnServlet</servlet-name>
+            <url-pattern>/Authn/{{ shibbolethproxy_item['location'] }}</url-pattern>
+          </servlet-mapping>
+  with_items: "{{ shibbolethproxy_flows}}"
+  loop_control:
+    loop_var: shibbolethproxy_item
+  notify:
+   - restart shibboleth-idp
+ 
 - name: ShibSP | Flows | Configure | AuthenticationFlows | authn/general-authn.xml | Disco
   xml:
     file: "{{ shibbolethidp_idp_home }}/conf/authn/general-authn.xml"
