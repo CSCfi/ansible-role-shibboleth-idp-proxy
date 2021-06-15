@@ -32,7 +32,7 @@
   lineinfile:
     dest: "{{ shibbolethidp_idp_home }}/conf/idp.properties"
     regexp: ^(?!.*reverseproxy)(idp.additionalProperties.*)$
-    line: '\1, /conf/reverseproxy.properties'
+    line: '\1, /conf/authn/reverseproxy.properties'
     backrefs: yes
 
 - name: ReverseProxy | Shibboleth IdP | idp.properties | authn/ReverseProxy flow
@@ -43,6 +43,18 @@
     backrefs: yes
   notify:
    - restart shibboleth-idp
+
+- name: Shibboleth IdP | ReverseProxy | Configure
+  lineinfile: dest={{ shibbolethidp_idp_home }}/conf/authn/reverseproxy.properties regexp="^#?\s*({{ item_proxy.option }}\s*=)" backrefs=yes  line="\\1 {{ item_proxy.value }}"
+  with_items:
+    - { option: 'reverseproxy.headername.username_pattern', value: "OIDC-CLAIM-sub", state: present }
+    - { option: 'reverseproxy.headername.pattern', value: "^OIDC-CLAIM-.*", state: present }
+    - { option: 'reverseproxy.login_url', value: "https://{{ ansible_fqdn}}/oidc/redirect_uri", state: present }
+    - { option: 'reverseproxy.authority_default', value: "{{ shibbolethproxy_reverseproxy_authority_default }}", state: present }
+    - { option: 'reverseproxy.callback_parameter', value: "target_link_uri=https://{{ ansible_fqdn }}", state: present }
+  loop_control:
+    loop_var: item_proxy
+
 
 - name: ReverseProxy | Configure | AuthenticationFlow | < authn/general-authn.xml
   xml:
@@ -69,16 +81,30 @@
           "{http://www.springframework.org/schema/p}passiveAuthenticationSupported": "true"
           "{http://www.springframework.org/schema/p}forcedAuthenticationSupported": "true"
 
-- name: ReverseProxy | Apache | shib.conf | Enable valid-user mode
-  lineinfile:
+- name: Shibboleth IdP | ReverseProxy | Configure | valid-user mode
+  lineinfile: dest=/etc/httpd/conf.d/shib.conf regexp="^#?\s*({{ item_proxy.option }}\s* )" backrefs=yes  line="\\1 {{ item_proxy.value }}"
+  with_items:
+    - { option: 'ShibCompatValidUser', value: "On", state: present }
+  loop_control:
+    loop_var: item_proxy
+
+- name: ReverseProxy | Apache | auth_openidc.conf | IdP support
+  blockinfile:
     dest: "/etc/httpd/conf.d/shib.conf"
-    line: 
-      ShibCompatValidUser On
+    marker: "### {mark} ansible managed - shibexteral block ###"
+    create: yes
+    insertafter: EOF
+    block: |
+      <Location /idp/Authn/ShibExternal>
+        AuthType shibboleth
+        require shibboleth
+        ShibUseHeaders On
+      </Location>
 
 - name: ReverseProxy | Apache | auth_openidc.conf | IdP support
   blockinfile:
     dest: "/etc/httpd/conf.d/auth_openidc.conf"
-    marker: "### {mark} ansible managed - idp block ###"
+    marker: "### {mark} ansible managed - reverse block ###"
     create: yes
     insertafter: EOF
     block: |
@@ -87,7 +113,7 @@
       OIDCClientID {{ vault_shibbolethproxy_OIDCClientID }}
       OIDCClientSecret {{ vault_shibbolethproxy_OIDCClientSecret }}
       OIDCScope "openid profile email voperson_external_affiliation eduperon_assurance eduperson_principal_name ssh_public_key voperson_external_id eduperson_orcid eduperson_entitlement uid voperson_id eduperson_scop$
-      OIDCCryptoPassphrase {{ vault_shibbolethproxy_OIDCClientSecret }}
+      OIDCCryptoPassphrase {{ vault_shibbolethproxy_OIDCCryptoPassphrase }}
       OIDCPassClaimsAs {{ shibbolethproxy_OIDCPassClaimsAs }}
       OIDCRedirectURI {{ shibbolethproxy_OIDCRedirectURI }}
       OIDCOAuthRemoteUserClaim {{ shibbolethproxy_OIDCOAuthRemoteUserClaim }}
@@ -118,13 +144,6 @@
         RequestHeader set "HANS_REMOTE_USER" expr=%{REMOTE_USER}
         RequestHeader set "HansLocation" YES
         LogLevel debug
-      </Location>
-
-      <Location /idp/profile/>
-        AuthType openid-connect
-        Require valid-user
-        OIDCUnAuthAction pass
-        RequestHeader set OIDC_REMOTE_USER expr=%{REMOTE_USER}
       </Location>
   notify:
     - restart apache

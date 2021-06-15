@@ -28,7 +28,6 @@ mod_auth_openidc_cjose_version_location: https://github.com/zmartzone/mod_auth_o
 shibbolethproxy_reverseproxyplugin_location: https://github.com/CSCfi/idp-authn-reverseproxy
 shibbolethproxy_reverseproxyplugin_version: 1.1.1
 
-
 shibbolethproxy_OIDCProviderMetadataURL: "{{ vault_OIDCProviderMetadataURL | default('not set yet') }}" 
 shibbolethproxy_OIDCClientID: "{{ vault_OIDCClientID | default('not set yet') }}"
 shibbolethproxy_OIDCClientSecret: "{{ vault_OIDCProviderMetadataURL | default('not set yet') }}"
@@ -38,7 +37,7 @@ shibbolethproxy_OIDCPassClaimsAs: both
 shibbolethproxy_OIDCRedirectURI: https://{{ ansible_fqdn }}/oidc/redirect_uri
 shibbolethproxy_OIDCOAuthRemoteUserClaim: eduPersonUniqueId
 shibbolethproxy_OIDCClaimPrefix: OIDC-CLAIM-
-
+shibbolethproxy_reverseproxy_authority_default: host.example.com
 
 
 shibbolethproxy_flows:

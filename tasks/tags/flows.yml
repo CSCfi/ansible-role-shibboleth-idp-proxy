@@ -144,7 +144,7 @@
           <on-render>
             <evaluate expression="opensamlProfileRequestContext.getSubcontext(T(net.shibboleth.idp.authn.context.AuthenticationContext)).addSubcontext(new net.shibboleth.idp.authn.context.ExternalAuthenticationContext(new net.shibboleth.idp.authn.impl.ExternalAuthenticationImpl(calledAsExtendedFlow?:false)), true).setFlowExecutionUrl(flowExecutionUrl + '&amp;_eventId_proceed=3')" />
           </on-render>
-          <transition to="ValidateShibFlowAuthentication" />
+          <transition to="ValidateShibExternalAuthentication" />
         </view-state>
       </flow>
   with_items: "{{ shibbolethproxy_flows }}"
