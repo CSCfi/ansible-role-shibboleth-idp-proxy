@@ -39,7 +39,7 @@
   lineinfile:
     dest: "{{ shibbolethidp_idp_home }}/conf/idp.properties"
     regexp: ^(?!.*ReverseProxy)(idp.authn.flows=.*)$
-    line: '\1|ReverseProxy'
+    line: '\1|reverseproxy'
     backrefs: yes
   notify:
    - restart shibboleth-idp
