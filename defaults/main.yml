@@ -16,7 +16,7 @@ shibbolethproxy_auditext_version: 1.0.0
 shibbolethproxy_auditext_location: 'https://github.com/mpassid/shibboleth-idp-audit-ext'
 shibbolethproxy_rest_version: 1.0.0
 shibbolethproxy_rest_location: 'https://github.com/mpassid/shibboleth-idp-rest'
-shibbolethproxy_ecadata_version: 1.0.2
+shibbolethproxy_ecadata_version: 1.0.2.1
 shibbolethproxy_ecadata_location: 'https://github.com/mpassid/shibboleth-idp-attribute-ecadata'
 
 shibbolethproxy_flows:
